@@ -1,8 +1,12 @@
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 
-import type { FeatureCardData } from './seo-sections-content';
+import type { SeoFeatureCardData } from './seo-types';
 
-export function SeoFeatureCard({ title, description, icon }: FeatureCardData) {
+export function SeoFeatureCard({
+  title,
+  description,
+  icon,
+}: SeoFeatureCardData) {
   return (
     <Card className="h-full border-border/80 bg-card/65 backdrop-blur-sm">
       <CardHeader className="gap-3">

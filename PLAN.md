@@ -152,6 +152,7 @@ Allow users to skip short password combinations when they know the password is a
 - [x] `src/pages/home/components/*` — add SEO-focused folds below the hero: problem statement, how-it-works, trust grid, FAQ, and disclaimer
 - [x] `src/pages/home/components/*` — split the SEO sections into smaller modules and move SVG icons into `src/icons/`
 - [x] `src/pages/home/index.tsx` — append the new sections below the existing hero and keep the footer at the end of the page
+- [x] `src/pages/home/*.tsx` — refactor each SEO fold into its own page-level section file and move reusable section primitives into `src/components/seo/`
 
 ## Phase 18: Static SEO Head Metadata
 

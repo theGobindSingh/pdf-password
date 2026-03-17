@@ -32,9 +32,9 @@ export default function HomeHeroSection() {
           Unlock your Password-Protected PDF
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Forgot the password to your PDF? Upload it and we'll systematically
-          test every possible combination to recover it — entirely in your
-          browser, your file never leaves your device.
+          Forgot the password to your PDF? Select the file and we'll
+          systematically test every possible combination to recover it —
+          entirely in your browser, your file never leaves your device.
         </p>
       </div>
 

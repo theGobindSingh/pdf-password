@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Badge } from '@/components/ui';
 
-interface SectionShellProps {
+interface SeoSectionShellProps {
   id: string;
   eyebrow: string;
   title: string;
@@ -16,7 +16,7 @@ export function SeoSectionShell({
   title,
   description,
   children,
-}: SectionShellProps) {
+}: SeoSectionShellProps) {
   return (
     <section id={id} className="py-16 sm:py-20">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">

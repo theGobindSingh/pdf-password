@@ -1,6 +1,10 @@
 import Footer from '@/components/footer';
-import { HomeSeoSections } from '@/pages/home/components';
+import HomeDisclaimerSection from '@/pages/home/disclaimer';
+import HomeFaqSection from '@/pages/home/faq';
+import HomeForgotPasswordSection from '@/pages/home/forgot-password';
 import HomeHeroSection from '@/pages/home/hero';
+import HomeHowItWorksSection from '@/pages/home/how-it-works';
+import HomeWhyUseThisToolSection from '@/pages/home/why-use-this-tool';
 
 function FloatingBlobs() {
   return (
@@ -21,7 +25,13 @@ export function HomePage() {
 
       <HomeHeroSection />
 
-      <HomeSeoSections />
+      <div className="relative z-10 mx-auto w-full max-w-6xl">
+        <HomeForgotPasswordSection />
+        <HomeHowItWorksSection />
+        <HomeWhyUseThisToolSection />
+        <HomeFaqSection />
+        <HomeDisclaimerSection />
+      </div>
 
       <Footer />
     </main>

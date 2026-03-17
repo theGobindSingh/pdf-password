@@ -1,3 +1,3 @@
 export { SeoFeatureCard } from './seo-feature-card';
 export { SeoSectionShell } from './seo-section-shell';
-export { HomeSeoSections } from './seo-sections';
+export type { SeoFaqItem, SeoFeatureCardData } from './seo-types';

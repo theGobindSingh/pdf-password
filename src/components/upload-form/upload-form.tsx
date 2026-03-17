@@ -138,7 +138,8 @@ export function UploadForm({
         <div>
           <CardTitle>PDF Unlocker</CardTitle>
           <CardDescription className="mt-1">
-            Forgot your PDF password? Upload it and we'll recover it for you.
+            Forgot your PDF password? Select your file and we'll recover it for
+            you.
           </CardDescription>
         </div>
         {!isPending && statusBadge(status)}
