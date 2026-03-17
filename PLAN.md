@@ -155,6 +155,7 @@ Allow users to skip short password combinations when they know the password is a
 - [x] `src/pages/home/components/*` — split the SEO sections into smaller modules and move SVG icons into `src/icons/`
 - [x] `src/pages/home/index.tsx` — append the new sections below the existing hero and keep the footer at the end of the page
 - [x] `src/pages/home/*.tsx` — refactor each SEO fold into its own page-level section file and move reusable section primitives into `src/components/seo/`
+- [x] `src/pages/home/index.tsx` / `src/hooks/use-standalone-mode.ts` — keep SEO sections on the website, but hide everything between the hero and footer when the app is running as an installed standalone PWA
 
 ## Phase 18: Static SEO Head Metadata
 

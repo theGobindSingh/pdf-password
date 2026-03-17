@@ -1,4 +1,5 @@
 import { Footer } from '@/components/footer';
+import { useStandaloneMode } from '@/hooks';
 import { HomeDisclaimerSection } from '@/pages/home/disclaimer';
 import { HomeFaqSection } from '@/pages/home/faq';
 import { HomeForgotPasswordSection } from '@/pages/home/forgot-password';
@@ -19,19 +20,23 @@ function FloatingBlobs() {
 }
 
 export function HomePage() {
+  const isStandalone = useStandaloneMode();
+
   return (
     <main className="relative items-center justify-center bg-background px-4 py-8 h-dvh w-dvw overflow-hidden overflow-y-auto">
       <FloatingBlobs />
 
       <HomeHeroSection />
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl">
-        <HomeForgotPasswordSection />
-        <HomeHowItWorksSection />
-        <HomeWhyUseThisToolSection />
-        <HomeFaqSection />
-        <HomeDisclaimerSection />
-      </div>
+      {!isStandalone && (
+        <div className="relative z-10 mx-auto w-full max-w-6xl">
+          <HomeForgotPasswordSection />
+          <HomeHowItWorksSection />
+          <HomeWhyUseThisToolSection />
+          <HomeFaqSection />
+          <HomeDisclaimerSection />
+        </div>
+      )}
 
       <Footer />
     </main>
