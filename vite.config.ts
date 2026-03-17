@@ -82,6 +82,22 @@ export default defineConfig({
             purpose: 'any',
           },
         ],
+        screenshots: [
+          {
+            src: '/screenshots/desktop.png',
+            sizes: '1280x800',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'PDF Unlocker — Desktop',
+          },
+          {
+            src: '/screenshots/mobile.png',
+            sizes: '390x844',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'PDF Unlocker — Mobile',
+          },
+        ],
         // Web Share Target — lets Android users share a PDF directly into the app
         share_target: {
           action: '/share-target',
