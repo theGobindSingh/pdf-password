@@ -12,6 +12,47 @@ type CompatOutputOptions = {
   inlineDynamicImports?: boolean;
 };
 
+const normalizeBasePath = (basePath: string): string => {
+  if (!basePath || basePath === '/') {
+    return '/';
+  }
+
+  const withLeadingSlash = basePath.startsWith('/') ? basePath : `/${basePath}`;
+
+  return withLeadingSlash.endsWith('/')
+    ? withLeadingSlash
+    : `${withLeadingSlash}/`;
+};
+
+const getDeployBasePath = (): string => {
+  const explicitBasePath = process.env.PUBLIC_BASE_PATH;
+  if (explicitBasePath) {
+    return normalizeBasePath(explicitBasePath);
+  }
+
+  const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1];
+  if (process.env.GITHUB_ACTIONS === 'true' && repositoryName) {
+    return normalizeBasePath(`/${repositoryName}/`);
+  }
+
+  return '/';
+};
+
+const basePath = getDeployBasePath();
+const basePathWithoutTrailingSlash =
+  basePath === '/' ? '' : basePath.slice(0, -1);
+const withBasePath = (assetPath: string): string => {
+  if (!assetPath || assetPath === '/') {
+    return basePath;
+  }
+
+  const normalizedAssetPath = assetPath.startsWith('/')
+    ? assetPath
+    : `/${assetPath}`;
+
+  return `${basePathWithoutTrailingSlash}${normalizedAssetPath}`;
+};
+
 const normalizeOutputOptions = <T extends CompatOutputOptions>(
   output: T,
 ): T => {
@@ -50,6 +91,7 @@ const coiHeaders = {
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: basePath,
   plugins: [
     vike(),
     react(),
@@ -84,7 +126,7 @@ export default defineConfig({
         },
       },
       manifest: {
-        id: '/',
+        id: basePath,
         name: 'PDF Unlocker',
         short_name: 'PDF Unlocker',
         description:
@@ -94,29 +136,29 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         prefer_related_applications: false,
-        scope: '/',
-        start_url: '/',
+        scope: basePath,
+        start_url: basePath,
         icons: [
           {
-            src: '/icons/android/launchericon-192x192.png',
+            src: withBasePath('/icons/android/launchericon-192x192.png'),
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/icons/android/launchericon-512x512.png',
+            src: withBasePath('/icons/android/launchericon-512x512.png'),
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
           },
           {
-            src: '/icons/android/launchericon-512x512.png',
+            src: withBasePath('/icons/android/launchericon-512x512.png'),
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/icons/android/launchericon-512x512.png',
+            src: withBasePath('/icons/android/launchericon-512x512.png'),
             sizes: 'any',
             type: 'image/svg+xml',
             purpose: 'any',
@@ -124,14 +166,14 @@ export default defineConfig({
         ],
         screenshots: [
           {
-            src: '/screenshots/desktop.png',
+            src: withBasePath('/screenshots/desktop.png'),
             sizes: '1280x800',
             type: 'image/png',
             form_factor: 'wide',
             label: 'PDF Unlocker — Desktop',
           },
           {
-            src: '/screenshots/mobile.png',
+            src: withBasePath('/screenshots/mobile.png'),
             sizes: '390x844',
             type: 'image/png',
             form_factor: 'narrow',
@@ -140,7 +182,7 @@ export default defineConfig({
         ],
         // Web Share Target — lets Android users share a PDF directly into the app
         share_target: {
-          action: '/share-target',
+          action: withBasePath('/share-target'),
           method: 'POST',
           enctype: 'multipart/form-data',
           params: {

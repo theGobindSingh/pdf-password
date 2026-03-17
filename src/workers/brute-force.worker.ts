@@ -28,11 +28,15 @@ self.addEventListener('unhandledrejection', (event) => {
 });
 
 self.onmessage = async (event: MessageEvent<WorkerInMessage>) => {
-  // minLength is honoured by the pre-seeded sharedCounter start offset (set in
-  // use-cracker.ts).  The worker itself just needs to include it in the message
-  // destructure so TypeScript is satisfied; no extra logic is required here.
-  const { type, pdfData, charset, maxLength, sharedCounter, batchSize } =
-    event.data;
+  const {
+    type,
+    pdfData,
+    charset,
+    minLength,
+    maxLength,
+    sharedCounter,
+    batchSize,
+  } = event.data;
   if (type !== 'start') return;
 
   try {
@@ -53,23 +57,49 @@ self.onmessage = async (event: MessageEvent<WorkerInMessage>) => {
       return;
     }
 
-    const counter = new BigInt64Array(sharedCounter);
     const spaceSize = passwordSpaceSize(charset, maxLength);
     const BATCH = BigInt(batchSize);
     const isAsync = dict.r >= 5;
+    const startOffset =
+      minLength <= 1 ? 0n : passwordSpaceSize(charset, minLength - 1);
 
     let attempts = 0;
     let foundPassword: string | null = null;
+    let nextIndex = startOffset;
+
+    const claimBatch = (): { startIdx: bigint; endIdx: bigint } | null => {
+      if (sharedCounter) {
+        const counter = new BigInt64Array(sharedCounter);
+        const startIdx = Atomics.add(counter, 0, BATCH);
+        if (startIdx >= spaceSize) {
+          return null;
+        }
+
+        return {
+          startIdx,
+          endIdx: startIdx + BATCH < spaceSize ? startIdx + BATCH : spaceSize,
+        };
+      }
+
+      if (nextIndex >= spaceSize) {
+        return null;
+      }
+
+      const startIdx = nextIndex;
+      const endIdx =
+        nextIndex + BATCH < spaceSize ? nextIndex + BATCH : spaceSize;
+      nextIndex = endIdx;
+
+      return { startIdx, endIdx };
+    };
 
     outer: while (true) {
-      // Atomically claim the next batch of indices from the shared counter.
-      const startIdx = Atomics.add(counter, 0, BATCH);
-      if (startIdx >= spaceSize) break;
+      const batch = claimBatch();
+      if (!batch) {
+        break;
+      }
 
-      const endIdx =
-        startIdx + BATCH < spaceSize ? startIdx + BATCH : spaceSize;
-
-      for (let i = startIdx; i < endIdx; i++) {
+      for (let i = batch.startIdx; i < batch.endIdx; i++) {
         const candidate = nthPassword(charset, maxLength, Number(i));
 
         const match = isAsync

@@ -5,8 +5,12 @@ export interface WorkerStartMessage {
   /** Workers only try passwords of at least this length (default 1). */
   minLength: number;
   maxLength: number;
-  /** BigInt64Array[0] — workers atomically claim batches of indices from this counter. */
-  sharedCounter: SharedArrayBuffer;
+  /**
+   * BigInt64Array[0] — workers atomically claim batches of indices from this
+   * counter when SharedArrayBuffer is available. Omitted on hosts such as
+   * GitHub Pages that cannot provide COOP/COEP.
+   */
+  sharedCounter?: SharedArrayBuffer;
   /** How many password indices each worker claims per Atomics.add call. */
   batchSize: number;
   workerId: number;

@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { withBasePath } from './utils/base-path';
 
 function createQueryClient() {
   return new QueryClient({
@@ -24,7 +25,7 @@ export function AppProviders({ children }: AppProvidersProps) {
       return;
     }
 
-    void navigator.serviceWorker.register('/sw.js');
+    void navigator.serviceWorker.register(withBasePath('/sw.js'));
   }, []);
 
   return (

@@ -53,16 +53,6 @@ export function useCracker() {
       maxLength = DEFAULT_MAX_LENGTH,
     }: CrackOptions) => {
       return new Promise<CrackerResult>((resolve, reject) => {
-        // Guard: SharedArrayBuffer requires cross-origin isolation (COOP + COEP headers).
-        if (typeof SharedArrayBuffer === 'undefined') {
-          reject(
-            new Error(
-              'SharedArrayBuffer is unavailable — ensure the page is served with COOP/COEP headers.',
-            ),
-          );
-          return;
-        }
-
         // Guard: detached or empty buffer means the PDF data was lost.
         if (pdfData.byteLength === 0) {
           reject(
@@ -73,20 +63,26 @@ export function useCracker() {
           return;
         }
 
+        const supportsSharedCounter = typeof SharedArrayBuffer !== 'undefined';
+
         // One worker per logical CPU core, capped at charset length (no point having
-        // more workers than there are distinct first characters to try).
-        const numWorkers = Math.min(
-          navigator.hardwareConcurrency ?? 4,
-          charset.length,
-        );
+        // more workers than there are distinct first characters to try). Hosts such
+        // as GitHub Pages cannot enable cross-origin isolation headers, so they fall
+        // back to a single sequential worker instead of failing outright.
+        const numWorkers = supportsSharedCounter
+          ? Math.min(navigator.hardwareConcurrency ?? 4, charset.length)
+          : 1;
+
+        const startOffset =
+          minLength <= 1 ? 0n : passwordSpaceSize(charset, minLength - 1);
+        const sharedCounter = supportsSharedCounter
+          ? new SharedArrayBuffer(8)
+          : undefined;
 
         // BigInt64Array[0] — all workers race to atomically claim batches of indices.
         // Pre-seed the counter to the first index at minLength so shorter
         // passwords are never attempted.
-        const sharedCounter = new SharedArrayBuffer(8);
-        const startOffset =
-          minLength <= 1 ? 0n : passwordSpaceSize(charset, minLength - 1);
-        if (startOffset > 0n) {
+        if (sharedCounter && startOffset > 0n) {
           new BigInt64Array(sharedCounter)[0] = startOffset;
         }
 

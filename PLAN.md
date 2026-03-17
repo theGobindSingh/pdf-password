@@ -174,6 +174,16 @@ Allow users to skip short password combinations when they know the password is a
 ## Phase 21: Vike Files Under src/pages
 
 - [x] move the Vike `+` files from top-level `pages/` into `src/pages/` so all page code lives under the source tree
+- [x] `src/pages/_error/+Page.tsx` — add a simple global Vike error page for 404s and runtime failures
+
+## Phase 22: GitHub Pages Deployment
+
+- [x] `vite.config.ts` — derive the deploy base path from environment and apply it to the Pages build + PWA manifest URLs
+- [x] `src/utils/base-path.ts` — add shared runtime helpers for building URLs under a configurable base path
+- [x] `src/app.tsx` / `src/pages/+Head.tsx` / `src/sw.ts` — replace root-relative URLs with base-aware URLs so the app works under `/<repo>/`
+- [x] `src/types/worker.types.ts` / `src/hooks/use-cracker.ts` / `src/workers/brute-force.worker.ts` — add a single-worker fallback for hosts without `SharedArrayBuffer`, including GitHub Pages
+- [x] `.github/workflows/deploy-pages.yml` / `public/.nojekyll` — add the GitHub Pages deployment workflow and static hosting support files
+- [x] `README.md` — document the deployment process and GitHub Pages runtime caveat
 
 ## Phase 20: Legacy SPA Cleanup
 
@@ -187,6 +197,7 @@ Allow users to skip short password combinations when they know the password is a
 
 ## Verification
 
+- [x] `PUBLIC_BASE_PATH=/pdf-unlocker/ pnpm build` completes and emits Pages-ready assets under `dist/client`
 - [ ] `pnpm dev` starts at localhost:3000 with dark theme
 - [ ] Upload unprotected.pdf → "No password" toast + Unprotected badge
 - [ ] Upload protected.pdf → "Password-protected" toast + Protected badge + Start Cracking enabled

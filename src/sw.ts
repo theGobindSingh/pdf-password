@@ -1,10 +1,14 @@
 /// <reference lib="webworker" />
+import { withBasePath } from '@/utils/base-path';
 import { clientsClaim } from 'workbox-core';
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
 declare let self: ServiceWorkerGlobalScope;
+
+const shareTargetPath = withBasePath('/share-target');
+const sharedRedirectPath = `${withBasePath('/')}?shared=1`;
 
 // Take control of all clients immediately on activation
 self.skipWaiting();
@@ -33,7 +37,7 @@ registerRoute(
 // IndexedDB, then redirect to the main page so the app can pick it up.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  if (url.pathname === '/share-target' && event.request.method === 'POST') {
+  if (url.pathname === shareTargetPath && event.request.method === 'POST') {
     event.respondWith(handleShareTarget(event.request));
   }
 });
@@ -50,7 +54,7 @@ async function handleShareTarget(request: Request): Promise<Response> {
   }
   return new Response(null, {
     status: 303,
-    headers: { Location: '/?shared=1' },
+    headers: { Location: sharedRedirectPath },
   });
 }
 

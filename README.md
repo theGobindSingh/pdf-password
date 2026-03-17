@@ -23,6 +23,7 @@ A fully client-side, browser-based tool that detects whether a PDF is password-p
     - [Install](#install)
     - [Dev Server](#dev-server)
     - [Production Build](#production-build)
+    - [GitHub Pages Deployment](#github-pages-deployment)
   - [Usage Guide](#usage-guide)
     - [Upload a PDF](#upload-a-pdf)
     - [Configure the Search](#configure-the-search)
@@ -71,10 +72,10 @@ When you select a PDF file, `checkPdfProtection()` (in `src/utils/pdf.ts`) tries
 
 When you click **Start Testing**, `useCracker` (in `src/hooks/use-cracker.ts`) is invoked as a TanStack Query `useMutation`. It:
 
-1. Validates that `SharedArrayBuffer` is available (requires COOP/COEP headers — served automatically by Vite in dev and preview mode).
-2. Allocates a `SharedArrayBuffer(8)` as a single 64-bit atomic counter backed by `BigInt64Array`.
-3. Pre-seeds the counter to `passwordSpaceSize(charset, minLength - 1)` so that all passwords shorter than `minLength` are skipped from the very start — no wasted work.
-4. Clones the PDF `ArrayBuffer` once per worker (via `ArrayBuffer.slice`) and spawns N workers via `new Worker(...)`.
+1. Uses a shared atomic counter when `SharedArrayBuffer` is available (requires COOP/COEP headers — served automatically by Vite in dev and preview mode).
+2. Falls back to one sequential worker on hosts such as GitHub Pages that cannot provide those headers.
+3. Pre-seeds the starting index to `passwordSpaceSize(charset, minLength - 1)` so that all passwords shorter than `minLength` are skipped from the very start — no wasted work.
+4. Clones the PDF `ArrayBuffer` once per worker (via `ArrayBuffer.slice`) and spawns the worker pool.
 5. Resolves the mutation promise when any worker posts `success` (or all workers post `failure`).
 
 ### Step 3 — Password Space Navigation
@@ -215,6 +216,8 @@ pdf-unlocker/
 
 ## Getting Started
 
+### Prerequisites
+
 │ ├── app.tsx # Shared React providers (QueryClient + ToastContainer)
 
 - [Node.js](https://nodejs.org) 20 or later
@@ -241,7 +244,26 @@ pnpm build       # TypeScript compile + Vike production build + prerender
 pnpm start       # Preview the prerendered output at localhost:3000
 ```
 
-> **Important**: your production web server must also serve the COOP/COEP headers, otherwise the multi-worker engine will refuse to start (the app will display an error toast).
+> **Important**: your production web server should serve the COOP/COEP headers if you want the full multi-worker engine. Without them, the app falls back to a single worker instead of failing.
+
+### GitHub Pages Deployment
+
+This repository now includes a GitHub Actions workflow at `.github/workflows/deploy-pages.yml` that publishes the static build from `dist/client` to GitHub Pages.
+
+1. Push the repository to GitHub.
+2. In the repository settings, open **Pages**.
+3. Set **Source** to **GitHub Actions**.
+4. Push to `main` or `master`, or run the **Deploy GitHub Pages** workflow manually.
+
+The workflow automatically sets `PUBLIC_BASE_PATH` so the app works both for project pages (`https://<user>.github.io/<repo>/`) and user/org pages (`https://<user>.github.io/`).
+
+If you need to build locally for Pages, use the same environment variable before running `pnpm build`:
+
+```bash
+PUBLIC_BASE_PATH=/pdf-unlocker/ pnpm build
+```
+
+GitHub Pages cannot send the `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` headers required for `SharedArrayBuffer`. Because of that, the deployed app automatically falls back to a single worker on Pages instead of failing. The UI still works, but cracking throughput will be lower than on a host where COOP/COEP headers are available.
 
 ---
 
