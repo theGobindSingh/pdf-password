@@ -30,6 +30,7 @@ export function Head() {
         content="black-translucent"
       />
       <meta name="apple-mobile-web-app-title" content="PDF Unlocker" />
+      <link rel="manifest" href={withBasePath('/manifest.webmanifest')} />
       <link
         rel="icon"
         type="image/png"
