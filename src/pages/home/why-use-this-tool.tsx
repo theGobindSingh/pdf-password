@@ -28,7 +28,7 @@ const reasons = [
   },
 ];
 
-export default function HomeWhyUseThisToolSection() {
+export function HomeWhyUseThisToolSection() {
   return (
     <SeoSectionShell
       id="why-use-this-tool"

@@ -21,6 +21,10 @@ interface UsePwaInstall {
 }
 
 function detectIos(): boolean {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+
   return (
     (/iphone|ipad|ipod/i.test(navigator.userAgent) &&
       // iPadOS 13+ reports as Mac; check touch support as fallback
@@ -30,6 +34,10 @@ function detectIos(): boolean {
 }
 
 function isRunningStandalone(): boolean {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return false;
+  }
+
   return (
     window.matchMedia('(display-mode: standalone)').matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true

@@ -141,20 +141,20 @@ for (let i = startIdx; i < endIdx; i++) {
 
 ## Tech Stack
 
-| Layer         | Library                                           | Purpose                         |
-| ------------- | ------------------------------------------------- | ------------------------------- |
-| Build         | [Vite 8](https://vitejs.dev)                      | Bundler + dev server            |
-| Language      | TypeScript 5.9                                    | Type safety                     |
-| UI framework  | React 19                                          | Component rendering             |
-| Compiler      | React Compiler (Babel plugin)                     | Automatic memoization           |
-| Routing       | TanStack Router                                   | Client-side routing             |
-| Async state   | TanStack Query                                    | Mutation lifecycle for cracking |
-| Forms         | TanStack Form                                     | Upload form handling            |
-| Styling       | Tailwind CSS v4                                   | Utility-first CSS               |
-| Notifications | react-toastify                                    | Toast messages                  |
-| PDF detection | pdf-lib 1.17                                      | Initial protection check        |
-| Crypto        | SubtleCrypto (browser built-in) + hand-rolled MD5 | Fast password verification      |
-| Concurrency   | Web Workers + SharedArrayBuffer + Atomics         | Parallel brute-force            |
+| Layer         | Library                                                 | Purpose                         |
+| ------------- | ------------------------------------------------------- | ------------------------------- |
+| Build         | [Vike](https://vike.dev) + [Vite 8](https://vitejs.dev) | Static prerendering + bundling  |
+| Language      | TypeScript 5.9                                          | Type safety                     |
+| UI framework  | React 19                                                | Component rendering             |
+| Compiler      | React Compiler (Babel plugin)                           | Automatic memoization           |
+| Rendering     | Vike SSG                                                | Pre-rendered static HTML output |
+| Async state   | TanStack Query                                          | Mutation lifecycle for cracking |
+| Forms         | TanStack Form                                           | Upload form handling            |
+| Styling       | Tailwind CSS v4                                         | Utility-first CSS               |
+| Notifications | react-toastify                                          | Toast messages                  |
+| PDF detection | pdf-lib 1.17                                            | Initial protection check        |
+| Crypto        | SubtleCrypto (browser built-in) + hand-rolled MD5       | Fast password verification      |
+| Concurrency   | Web Workers + SharedArrayBuffer + Atomics               | Parallel brute-force            |
 
 ---
 
@@ -162,12 +162,22 @@ for (let i = startIdx; i < endIdx; i++) {
 
 ```text
 pdf-unlocker/
-├── index.html                    # Entry HTML (sets dark class)
-├── vite.config.ts               # Vite config: Tailwind, React Compiler, COOP/COEP headers, @ alias
+├── pages/
+│   ├── +config.ts               # Vike global config: prerender + shared metadata
+│   ├── +Head.tsx                # Global head tags and structured data
+│   └── index/
+│       └── +Page.tsx            # Prerendered home page entry
+├── vite.config.ts               # Vike/Vite config: prerender plugin, Tailwind, React Compiler, COOP/COEP headers, @ alias
 ├── src/
-│   ├── main.tsx                  # React 19 root render
-│   ├── app.tsx                   # TanStack Router provider + ToastContainer
-│   ├── router.tsx                # Route tree (single / route → HomePage)
+│   ├── pages/
+│   │   ├── +config.ts           # Vike global config: prerender + shared metadata
+│   │   ├── +Head.tsx            # Global head tags and structured data
+│   │   ├── index/
+│   │   │   └── +Page.tsx        # Prerendered home page entry
+│   │   ├── home/
+│   │   │   └── index.tsx        # HomePage — layout, animated blobs, Card shell
+│   │   └── index.ts             # Re-exports HomePage for app code
+│   ├── app.tsx                   # Shared React providers (QueryClient + ToastContainer)
 │   ├── styles/
 │   │   └── index.css             # Tailwind import + CSS variables + blob animation keyframes
 │   ├── types/
@@ -175,7 +185,6 @@ pdf-unlocker/
 │   │   └── worker.types.ts       # WorkerInMessage / WorkerOutMessage union types
 │   ├── utils/
 │   │   ├── pdf.ts                # checkPdfProtection() — uses pdf-lib lazily
-│   │   ├── brute-force.ts        # generatePasswords() — an ES generator (unused by worker, kept for reference)
 │   │   ├── password-index.ts     # nthPassword() + passwordSpaceSize() — flat-index navigation
 │   │   └── pdf-verifier.ts       # parsePdfEncrypt() + verifyPassword() + verifyPasswordAsync()
 │   ├── workers/
@@ -185,9 +194,6 @@ pdf-unlocker/
 │   │   └── use-cracker.ts        # useCracker — spawns workers, aggregates progress, exposes startCracking/stopCracking
 │   ├── icons/
 │   │   └── info-circle.tsx       # SVG icon component
-│   ├── pages/
-│   │   └── home/
-│   │       └── index.tsx         # HomePage — layout, animated blobs, Card shell
 │   └── components/
 │       ├── ui/                   # shadcn-style primitives (Button, Card, Input, Progress, Badge)
 │       ├── common/               # Shared atoms: FileInput, LoadingSpinner, ErrorMessage
@@ -201,9 +207,15 @@ pdf-unlocker/
 
 ---
 
+├── pages/
+│ ├── +config.ts # Vike global config: prerender + shared metadata
+│ ├── +Head.tsx # Global head tags and structured data
+│ └── index/
+│ └── +Page.tsx # Prerendered home page entry
+
 ## Getting Started
 
-### Prerequisites
+│ ├── app.tsx # Shared React providers (QueryClient + ToastContainer)
 
 - [Node.js](https://nodejs.org) 20 or later
 - [pnpm](https://pnpm.io) 9 or later (`npm install -g pnpm`)
@@ -220,13 +232,13 @@ pnpm install
 pnpm dev
 ```
 
-Opens at `http://localhost:3000`. The dev server automatically sets the required `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` headers that unlock `SharedArrayBuffer`.
+Opens Vike's dev server at `http://localhost:3000`. The dev server automatically sets the required `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` headers that unlock `SharedArrayBuffer`.
 
 ### Production Build
 
 ```bash
-pnpm build       # TypeScript compile + Vite bundle
-pnpm start       # Preview the built output at localhost:3000
+pnpm build       # TypeScript compile + Vike production build + prerender
+pnpm start       # Preview the prerendered output at localhost:3000
 ```
 
 > **Important**: your production web server must also serve the COOP/COEP headers, otherwise the multi-worker engine will refuse to start (the app will display an error toast).

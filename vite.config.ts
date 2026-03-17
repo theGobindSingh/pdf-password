@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import fs from 'node:fs';
 import path from 'path';
+import vike from 'vike/plugin';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -50,6 +51,7 @@ const coiHeaders = {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    vike(),
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
@@ -58,10 +60,10 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.ts',
-      injectRegister: 'auto',
+      injectRegister: null,
       registerType: 'autoUpdate',
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: 'module',
         resolveTempFolder: () => 'dist/dev-sw',
       },

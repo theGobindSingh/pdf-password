@@ -39,7 +39,7 @@ const faqs = [
   },
 ];
 
-export default function HomeFaqSection() {
+export function HomeFaqSection() {
   return (
     <SeoSectionShell
       id="faq"

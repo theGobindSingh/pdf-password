@@ -22,7 +22,7 @@ const features = [
   '100% private, zero tracking',
 ];
 
-export default function HomeHeroSection() {
+export function HomeHeroSection() {
   const [pdfState, setPdfState] = useState<PdfState | null>(null);
   const sharedFile = useSharedFile();
   return (

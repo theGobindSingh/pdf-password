@@ -28,7 +28,7 @@ const steps = [
   },
 ];
 
-export default function HomeHowItWorksSection() {
+export function HomeHowItWorksSection() {
   return (
     <SeoSectionShell
       id="how-it-works"

@@ -2,7 +2,7 @@ import { SeoSectionShell } from '@/components/seo';
 import { Card, CardContent } from '@/components/ui';
 import { DocumentSearchIcon } from '@/icons';
 
-export default function HomeForgotPasswordSection() {
+export function HomeForgotPasswordSection() {
   return (
     <SeoSectionShell
       id="forgot-pdf-password"

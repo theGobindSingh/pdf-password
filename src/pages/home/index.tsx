@@ -1,10 +1,10 @@
-import Footer from '@/components/footer';
-import HomeDisclaimerSection from '@/pages/home/disclaimer';
-import HomeFaqSection from '@/pages/home/faq';
-import HomeForgotPasswordSection from '@/pages/home/forgot-password';
-import HomeHeroSection from '@/pages/home/hero';
-import HomeHowItWorksSection from '@/pages/home/how-it-works';
-import HomeWhyUseThisToolSection from '@/pages/home/why-use-this-tool';
+import { Footer } from '@/components/footer';
+import { HomeDisclaimerSection } from '@/pages/home/disclaimer';
+import { HomeFaqSection } from '@/pages/home/faq';
+import { HomeForgotPasswordSection } from '@/pages/home/forgot-password';
+import { HomeHeroSection } from '@/pages/home/hero';
+import { HomeHowItWorksSection } from '@/pages/home/how-it-works';
+import { HomeWhyUseThisToolSection } from '@/pages/home/why-use-this-tool';
 
 function FloatingBlobs() {
   return (

@@ -2,7 +2,7 @@ import { Button } from '@/components/ui';
 import { usePwaInstall } from '@/hooks';
 import { useState } from 'react';
 
-export default function Footer() {
+export function Footer() {
   const { canInstall, install, isInstalling, isIos } = usePwaInstall();
   const [showIosHint, setShowIosHint] = useState(false);
   return (

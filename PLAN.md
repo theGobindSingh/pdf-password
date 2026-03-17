@@ -4,7 +4,7 @@
 
 ## Summary
 
-A single-page client-side React app that lets a user upload a PDF, detects if it is password-protected, and attempts to brute-force crack the password using a Web Worker (keeping the UI responsive). Stack: React 19, Vite, TypeScript, TanStack Router/Query/Form, Tailwind CSS, shadcn-style UI components, react-toastify, pdf-lib.
+A single-page client-side React app that lets a user upload a PDF, detects if it is password-protected, and attempts to brute-force crack the password using a Web Worker (keeping the UI responsive). Stack: React 19, Vike + Vite, TypeScript, TanStack Query/Form, Tailwind CSS, shadcn-style UI components, react-toastify, pdf-lib.
 
 ---
 
@@ -160,6 +160,31 @@ Allow users to skip short password combinations when they know the password is a
 - [x] `index.html` — refresh title, description, Open Graph, and Twitter metadata for the single-page marketing surface
 - [x] `index.html` — add FAQPage JSON-LD aligned with the on-page FAQ copy
 
+## Phase 19: Vike Static Prerender
+
+- [x] `pnpm add vike vike-react`
+- [x] `package.json` — switch `dev` / `build` / `start` scripts from Vite CLI to Vike CLI so prerender runs during production builds
+- [x] `vite.config.ts` — add the Vike plugin alongside the existing React, Tailwind, and PWA plugins
+- [x] `src/pages/+config.ts` — enable global prerendering and extend `vike-react`
+- [x] `src/pages/+Head.tsx` — move the marketing metadata and structured data into Vike-managed head tags
+- [x] `src/pages/index/+Page.tsx` — render the existing homepage through Vike for static generation
+- [x] `src/app.tsx` — extract shared React providers so both the legacy SPA entry and Vike page can reuse them
+- [x] `src/hooks/use-pwa-install.ts` — guard browser-only globals so build-time rendering stays safe
+
+## Phase 21: Vike Files Under src/pages
+
+- [x] move the Vike `+` files from top-level `pages/` into `src/pages/` so all page code lives under the source tree
+
+## Phase 20: Legacy SPA Cleanup
+
+- [x] `pnpm remove @tanstack/react-router`
+- [x] `pnpm remove pdfjs-dist`
+- [x] `src/app.tsx` — remove the unused `App` wrapper that only existed for the old TanStack Router bootstrap
+- [x] `src/main.tsx` — delete the obsolete Vite SPA entrypoint
+- [x] `src/router.tsx` — delete the obsolete TanStack Router setup
+- [x] `index.html` — delete the obsolete Vite HTML entry template now that Vike generates the prerendered HTML output
+- [x] `src/utils/brute-force.ts` — delete the unused legacy password generator and stop re-exporting it
+
 ## Verification
 
 - [ ] `pnpm dev` starts at localhost:3000 with dark theme
@@ -168,4 +193,4 @@ Allow users to skip short password combinations when they know the password is a
 - [ ] Start Cracking → progress bar animates, counter increments, UI stays responsive
 - [ ] Stop Cracking → worker terminates, UI resets
 
-> **Note**: `pdfjs-dist` was added (instead of relying on `pdf-lib` for cracking) because `pdf-lib` v1.17.1 has no runtime password-decryption support. `pdf-lib` is still used for the initial protection check; `pdfjs-dist` drives the brute-force loop via its `onPassword` callback mechanism.
+> **Note**: `pdf-lib` is still used for the initial protection check, while password verification in the hot path now uses the custom crypto verifier in `src/utils/pdf-verifier.ts`.

@@ -1,20 +1,35 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { RouterProvider } from '@tanstack/react-router'
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import { router } from './router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { type ReactNode, useEffect, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: false },
-    mutations: { retry: false },
-  },
-})
+function createQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+}
 
-export function App() {
+interface AppProvidersProps {
+  children: ReactNode;
+}
+
+export function AppProviders({ children }: AppProvidersProps) {
+  const [queryClient] = useState(createQueryClient);
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator) || import.meta.env.DEV) {
+      return;
+    }
+
+    void navigator.serviceWorker.register('/sw.js');
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      {children}
       <ToastContainer
         position="bottom-right"
         theme="dark"
@@ -24,5 +39,5 @@ export function App() {
         pauseOnHover
       />
     </QueryClientProvider>
-  )
+  );
 }
