@@ -6,6 +6,31 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+type CompatOutputOptions = {
+  codeSplitting?: boolean | object;
+  inlineDynamicImports?: boolean;
+};
+
+const normalizeOutputOptions = <T extends CompatOutputOptions>(
+  output: T,
+): T => {
+  const nextOutput = { ...output, codeSplitting: false };
+
+  delete nextOutput.inlineDynamicImports;
+
+  return nextOutput;
+};
+
+const patchDeprecatedInlineDynamicImports = (
+  output: CompatOutputOptions | CompatOutputOptions[] | undefined,
+): CompatOutputOptions | CompatOutputOptions[] | undefined => {
+  if (Array.isArray(output)) {
+    return output.map(normalizeOutputOptions);
+  }
+
+  return output ? normalizeOutputOptions(output) : output;
+};
+
 const certDir = path.resolve(__dirname, '.cert');
 const httpsConfig =
   fs.existsSync(path.join(certDir, 'cert.key')) &&
@@ -42,6 +67,19 @@ export default defineConfig({
       },
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
+      },
+      integration: {
+        configureCustomSWViteBuild(inlineConfig) {
+          const rollupOptions = inlineConfig.build?.rollupOptions;
+
+          if (!rollupOptions?.output) {
+            return;
+          }
+
+          rollupOptions.output = patchDeprecatedInlineDynamicImports(
+            rollupOptions.output,
+          );
+        },
       },
       manifest: {
         id: '/',

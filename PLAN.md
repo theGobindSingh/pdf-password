@@ -125,6 +125,7 @@ Make the app installable as a Progressive Web App, work offline, and accept PDF 
 - [x] `pnpm add -D vite-plugin-pwa` + `pnpm add workbox-precaching workbox-core`
 - [x] `src/sw.ts` — custom service worker: Workbox precache + share target handler (intercept POST `/share-target`, store file in IndexedDB, redirect to `/?shared=1`)
 - [x] `vite.config.ts` — add `VitePWA({ strategies: 'injectManifest', ... })` with full manifest (name, icons, display, theme, `share_target` for `.pdf` files)
+- [x] `vite.config.ts` — patch the custom service worker build output to use `codeSplitting: false` instead of the deprecated `inlineDynamicImports` flag emitted by `vite-plugin-pwa`
 - [x] `src/hooks/use-shared-file.ts` — reads and clears the pending shared file from IndexedDB when `?shared=1` is present in the URL
 - [x] `src/hooks/use-pwa-install.ts` — captures `beforeinstallprompt`, exposes `canInstall` / `install()` / `isInstalling`
 - [x] `src/hooks/index.ts` — re-export `useSharedFile` and `usePwaInstall`
