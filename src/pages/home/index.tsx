@@ -1,5 +1,6 @@
-import { Card, CardContent, CardHeader } from '@/components/ui';
+import { Button, Card, CardContent, CardHeader } from '@/components/ui';
 import { UploadForm } from '@/components/upload-form';
+import { usePwaInstall, useSharedFile } from '@/hooks';
 import { InfoCircleIcon } from '@/icons';
 import type { PdfStatus } from '@/types';
 import { lazy, Suspense, useState } from 'react';
@@ -16,22 +17,33 @@ interface PdfState {
 
 export function HomePage() {
   const [pdfState, setPdfState] = useState<PdfState | null>(null);
+  const sharedFile = useSharedFile();
+  const { canInstall, install, isInstalling, isIos } = usePwaInstall();
+
+  const [showIosHint, setShowIosHint] = useState(false);
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
-      {/* Decorative background blobs */}
-      <div className="blob pointer-events-none absolute -left-48 -top-48 h-[600px] w-[600px] bg-blue-600/10 blur-3xl" />
-      <div className="blob-delay pointer-events-none absolute -bottom-48 -right-48 h-[500px] w-[500px] bg-blue-400/8 blur-3xl" />
+    <main className="relative flex min-h-screen flex-col items-center justify-center bg-background px-4 py-8">
+      {/* Decorative background blobs — fixed overlay so they never affect layout */}
+      <div
+        className="pointer-events-none fixed inset-0 overflow-hidden"
+        aria-hidden="true"
+      >
+        <div className="blob absolute -left-48 -top-48 h-[600px] w-[600px] bg-blue-600/10 blur-3xl" />
+        <div className="blob-delay absolute -bottom-48 -right-48 h-[500px] w-[500px] bg-blue-400/8 blur-3xl" />
+      </div>
 
-      <div className="relative z-10 w-full max-w-lg">
+      {/* All content — single in-flow column, scrolls as one unit */}
+      <div className="relative z-10 flex w-full max-w-lg flex-col gap-0">
         {/* Hero */}
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Find the Password to Your PDF
+            Unlock your Password-Protected PDF
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Upload your PDF and we’ll test every possible combination to find
-            your password — completely private, right in your browser.
+            Forgot the password to your PDF? Upload it and we'll systematically
+            test every possible combination to recover it — entirely in your
+            browser, your file never leaves your device.
           </p>
         </div>
 
@@ -39,6 +51,7 @@ export function HomePage() {
           <CardHeader>
             <UploadForm
               file={pdfState?.file ?? null}
+              initialFile={sharedFile}
               status={pdfState?.status ?? 'idle'}
               onPdfReady={({ file, arrayBuffer, protection }) =>
                 setPdfState({ file, arrayBuffer, status: protection })
@@ -89,30 +102,86 @@ export function HomePage() {
           This tool is intended only for accessing files you own or have
           permission to use.
         </p>
-      </div>
 
-      {/* Footer */}
-      <footer className="absolute bottom-4 left-0 right-0 z-10 flex flex-col items-center gap-1 text-xs text-muted-foreground/50">
-        <p>
-          Made with ❤️ in India by{' '}
+        {/* Footer — inside the content column, no special positioning needed */}
+        <footer className="mt-6 flex flex-col items-center gap-2 text-xs text-muted-foreground/50">
+          {canInstall && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={
+                  isIos ? () => setShowIosHint((v) => !v) : () => void install()
+                }
+                disabled={isInstalling}
+                className="flex items-center gap-1.5 text-xs cursor-pointer"
+                aria-label="Install app"
+              >
+                <svg
+                  className="h-3.5 w-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                {isInstalling ? 'Installing…' : 'Install App'}
+              </Button>
+
+              {/* iOS "Add to Home Screen" guidance */}
+              {isIos && showIosHint && (
+                <p className="max-w-xs text-center text-xs text-muted-foreground/70 px-4">
+                  Tap the{' '}
+                  <svg
+                    className="inline h-3.5 w-3.5 align-text-bottom"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-label="Share"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    />
+                  </svg>{' '}
+                  Share button in Safari, then choose{' '}
+                  <strong className="text-muted-foreground">
+                    "Add to Home Screen"
+                  </strong>
+                  .
+                </p>
+              )}
+            </>
+          )}
+          <p>
+            Made with ❤️ in India by{' '}
+            <a
+              href="https://portfolio-gobindsingh.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-muted-foreground transition-colors"
+            >
+              Gobind Singh
+            </a>
+          </p>
           <a
-            href="https://portfolio-gobindsingh.vercel.app/"
+            href="https://github.com/theGobindSingh/pdf-password"
             target="_blank"
             rel="noopener noreferrer"
             className="underline underline-offset-2 hover:text-muted-foreground transition-colors"
           >
-            Gobind Singh
+            Github Repo
           </a>
-        </p>
-        <a
-          href="https://github.com/theGobindSingh/pdf-password"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:text-muted-foreground transition-colors"
-        >
-          Github Repo
-        </a>
-      </footer>
+        </footer>
+      </div>
     </main>
   );
 }

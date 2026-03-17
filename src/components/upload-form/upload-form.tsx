@@ -3,7 +3,13 @@ import { Badge, CardDescription, CardTitle } from '@/components/ui';
 import { usePdfCheck } from '@/hooks';
 import type { PdfStatus } from '@/types';
 import { useForm } from '@tanstack/react-form';
-import { type DragEvent, useCallback, useRef, useState } from 'react';
+import {
+  type DragEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { toast } from 'react-toastify';
 
 interface PdfReadyData {
@@ -14,6 +20,8 @@ interface PdfReadyData {
 
 interface UploadFormProps {
   file: File | null;
+  /** A file received via the Web Share Target API — auto-processed on mount. */
+  initialFile?: File | null;
   onPdfReady: (data: PdfReadyData) => void;
   onRemove: () => void;
   status: PdfStatus;
@@ -39,6 +47,7 @@ function statusBadge(status: PdfStatus) {
 
 export function UploadForm({
   file,
+  initialFile,
   onPdfReady,
   onRemove,
   status,
@@ -46,6 +55,7 @@ export function UploadForm({
   const { checkPdfAsync, isPending, error, reset } = usePdfCheck();
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const sharedFileProcessed = useRef(false);
 
   const form = useForm({
     defaultValues: { file: null as File | null },
@@ -87,6 +97,16 @@ export function UploadForm({
     [checkPdfAsync, onPdfReady, reset],
   );
 
+  // Auto-process a file that arrived via the Web Share Target
+  useEffect(() => {
+    if (initialFile && !sharedFileProcessed.current) {
+      sharedFileProcessed.current = true;
+      void handleFileChange(initialFile);
+    }
+    // handleFileChange is stable (useCallback) so this is safe
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFile]);
+
   function handleRemove() {
     reset();
     form.reset();
@@ -116,9 +136,9 @@ export function UploadForm({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-y-1">
         <div>
-          <CardTitle>PDF Password Finder</CardTitle>
+          <CardTitle>PDF Unlocker</CardTitle>
           <CardDescription className="mt-1">
-            Upload your PDF — we’ll test every combination to find your password
+            Forgot your PDF password? Upload it and we'll recover it for you.
           </CardDescription>
         </div>
         {!isPending && statusBadge(status)}

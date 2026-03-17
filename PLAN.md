@@ -118,6 +118,19 @@ Enable dynamic load balancing: fast workers claim more work from a shared counte
 - [x] `src/workers/brute-force.worker.ts` — use `Atomics.add(counter, 0, batchSize)` to claim a batch of indices; convert each claimed index to a candidate via `nthPassword`; loop until `Atomics.load` reads past `passwordSpaceSize`
 - [x] `src/hooks/use-cracker.ts` — allocate `new SharedArrayBuffer(8)`, initialize the counter to 0, pass the same buffer to all workers (shared reference, not cloned)
 
+## Phase 15: PWA — Offline-First + Installable + Web Share Target
+
+Make the app installable as a Progressive Web App, work offline, and accept PDF files shared from the Android share sheet.
+
+- [x] `pnpm add -D vite-plugin-pwa` + `pnpm add workbox-precaching workbox-core`
+- [x] `src/sw.ts` — custom service worker: Workbox precache + share target handler (intercept POST `/share-target`, store file in IndexedDB, redirect to `/?shared=1`)
+- [x] `vite.config.ts` — add `VitePWA({ strategies: 'injectManifest', ... })` with full manifest (name, icons, display, theme, `share_target` for `.pdf` files)
+- [x] `src/hooks/use-shared-file.ts` — reads and clears the pending shared file from IndexedDB when `?shared=1` is present in the URL
+- [x] `src/hooks/use-pwa-install.ts` — captures `beforeinstallprompt`, exposes `canInstall` / `install()` / `isInstalling`
+- [x] `src/hooks/index.ts` — re-export `useSharedFile` and `usePwaInstall`
+- [x] `src/components/upload-form/upload-form.tsx` — add `initialFile?: File | null` prop; `useEffect` to auto-process a shared file on mount
+- [x] `src/pages/home/index.tsx` — wire `useSharedFile()` → `<UploadForm initialFile={...} />` and render an Install button via `usePwaInstall()`
+
 ## Phase 15: Progress Throttle Tuning
 
 Reduce main-thread `postMessage` saturation at high attempt rates. Zero-risk, zero-effort win.

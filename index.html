@@ -2,34 +2,38 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/icons/android/launchericon-512x512.png"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Primary SEO -->
     <title>
-      PDF Access Checker — Check PDF Password Protection &amp; Recover Access |
-      100% Private
+      PDF Unlocker — Unlock your Password-Protected PDFs | Free, Private &
+      Secure
     </title>
     <meta
       name="description"
-      content="Check if your PDF is password protected and recover access to your own files. 100% client-side — your files never leave your device. No uploads, no servers, no tracking."
+      content="Forgot the password to your PDF? PDF Unlocker systematically tests every possible combination to recover it — 100% in your browser. No uploads, no servers, your file never leaves your device."
     />
     <meta
       name="keywords"
-      content="pdf password checker, pdf protection check, check pdf security, pdf access recovery, unlock pdf, pdf password tester, recover pdf access, client side pdf checker, no upload pdf tool, pdf password protection analyzer, pdf access checker"
+      content="pdf password recovery, forgot pdf password, recover pdf password, unlock pdf, pdf unlocker, password protected pdf, regain pdf access, pdf password finder, client side pdf tool, no upload pdf recovery"
     />
     <meta name="robots" content="index, follow" />
-    <meta name="author" content="PDF Access Checker" />
+    <meta name="author" content="PDF Unlocker" />
 
     <!-- Open Graph / Social Sharing -->
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
-      content="PDF Access Checker — Check PDF Password Protection &amp; Recover Access"
+      content="PDF Unlocker — Unlock your Password-Protected PDFs"
     />
     <meta
       property="og:description"
-      content="Check if your PDF is password protected and recover access to your own files. 100% client-side — your files never leave your device."
+      content="Forgot the password to your PDF? PDF Unlocker tests every possible combination to recover it — runs entirely in your browser, your file never leaves your device."
     />
     <meta property="og:image" content="/og-image.png" />
     <meta property="og:locale" content="en_US" />
@@ -38,11 +42,11 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="PDF Access Checker — Check PDF Password Protection &amp; Recover Access"
+      content="PDF Unlocker — Unlock your Password-Protected PDFs"
     />
     <meta
       name="twitter:description"
-      content="Check if your PDF is password protected and recover access to your own files. 100% private — files never leave your device."
+      content="Forgot the password to your PDF? PDF Unlocker tests every possible combination to recover it — runs 100% in your browser, nothing leaves your device."
     />
     <meta name="twitter:image" content="/og-image.png" />
 
@@ -50,13 +54,25 @@
     <meta name="theme-color" content="#0f172a" />
     <meta name="color-scheme" content="dark light" />
 
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="PDF Unlocker" />
+    <link rel="apple-touch-icon" href="/icons/ios/180.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/ios/152.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/ios/167.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/ios/180.png" />
+
     <!-- Structured Data -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "PDF Access Checker",
-        "description": "Check if your PDF is password protected and recover access to your own files. Runs entirely in your browser — no uploads, no server processing, your files never leave your device.",
+        "name": "PDF Unlocker",
+        "description": "Forgot the password to your PDF? PDF Unlocker systematically tests every possible combination to recover it. Runs entirely in your browser — no uploads, no server, your files never leave your device.",
         "applicationCategory": "UtilitiesApplication",
         "operatingSystem": "Any",
         "offers": {
@@ -65,8 +81,8 @@
           "priceCurrency": "USD"
         },
         "featureList": [
-          "Check if a PDF is password protected",
-          "Recover access to your own PDF files",
+          "Recover forgotten PDF passwords",
+          "Systematically tests every possible password combination",
           "100% client-side — no file uploads",
           "Privacy-first — your files never leave your device",
           "Zero tracking or data collection"
@@ -76,6 +92,14 @@
     </script>
   </head>
   <body>
+    <!-- Capture beforeinstallprompt before React mounts to avoid missing the event -->
+    <script>
+      window.__pwaInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        window.__pwaInstallPrompt = e;
+      });
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
