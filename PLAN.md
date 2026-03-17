@@ -146,6 +146,18 @@ Allow users to skip short password combinations when they know the password is a
 - [x] `src/workers/brute-force.worker.ts` — destructure `minLength` from the start message (honoured automatically via counter offset; no hot-path change)
 - [x] `src/components/cracker/cracker.tsx` — add `minLength` state (default 1), render a "Min length" number input beside the existing "Max" input; clamp `minLength ≤ maxLength` and vice-versa; pass `minLength` to `startCracking`
 
+## Phase 17: Homepage SEO Content
+
+- [x] `src/components/ui/accordion.tsx` — add a lightweight shared accordion primitive for FAQ content
+- [x] `src/pages/home/components/*` — add SEO-focused folds below the hero: problem statement, how-it-works, trust grid, FAQ, and disclaimer
+- [x] `src/pages/home/components/*` — split the SEO sections into smaller modules and move SVG icons into `src/icons/`
+- [x] `src/pages/home/index.tsx` — append the new sections below the existing hero and keep the footer at the end of the page
+
+## Phase 18: Static SEO Head Metadata
+
+- [x] `index.html` — refresh title, description, Open Graph, and Twitter metadata for the single-page marketing surface
+- [x] `index.html` — add FAQPage JSON-LD aligned with the on-page FAQ copy
+
 ## Verification
 
 - [ ] `pnpm dev` starts at localhost:3000 with dark theme

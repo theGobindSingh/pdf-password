@@ -1,4 +1,5 @@
 import Footer from '@/components/footer';
+import { HomeSeoSections } from '@/pages/home/components';
 import HomeHeroSection from '@/pages/home/hero';
 
 function FloatingBlobs() {
@@ -16,13 +17,12 @@ function FloatingBlobs() {
 export function HomePage() {
   return (
     <main className="relative items-center justify-center bg-background px-4 py-8 h-dvh w-dvw overflow-hidden overflow-y-auto">
-      {/* Decorative background blobs — fixed overlay so they never affect layout */}
       <FloatingBlobs />
 
-      {/* hero - first fold */}
       <HomeHeroSection />
 
-      {/* Footer — temporarily here, needs to go within last fold */}
+      <HomeSeoSections />
+
       <Footer />
     </main>
   );
