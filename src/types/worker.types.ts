@@ -5,6 +5,8 @@ export interface WorkerStartMessage {
   /** Workers only try passwords of at least this length (default 1). */
   minLength: number;
   maxLength: number;
+  /** First flat password-space index this run should claim from. */
+  startIndex: bigint;
   /**
    * BigInt64Array[0] — workers atomically claim batches of indices from this
    * counter when SharedArrayBuffer is available. Omitted on hosts such as

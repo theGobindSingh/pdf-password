@@ -257,6 +257,7 @@ export const useCracker = () => {
               charset,
               minLength,
               maxLength,
+              startIndex: startOffset,
               sharedCounter,
               batchSize: BATCH_SIZE,
               workerId,

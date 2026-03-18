@@ -108,8 +108,8 @@ self.onmessage = async (event: MessageEvent<WorkerInMessage>) => {
     type,
     pdfData,
     charset,
-    minLength,
     maxLength,
+    startIndex,
     sharedCounter,
     batchSize,
   } = event.data;
@@ -137,12 +137,10 @@ self.onmessage = async (event: MessageEvent<WorkerInMessage>) => {
     const spaceSize = passwordSpaceSize(charset, maxLength);
     const BATCH = BigInt(batchSize);
     const isAsync = dict.r >= 5;
-    const startOffset =
-      minLength <= 1 ? 0n : passwordSpaceSize(charset, minLength - 1);
 
     let attempts = 0;
     let foundPassword: string | null = null;
-    let nextIndex = startOffset;
+    let nextIndex = startIndex;
 
     const claimBatch = (): { startIdx: bigint; endIdx: bigint } | null => {
       if (sharedCounter) {

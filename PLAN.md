@@ -203,6 +203,7 @@ Allow users to skip short password combinations when they know the password is a
 - [x] `src/utils/password-index.ts` — add `passwordIndex()` to map a known candidate back to its flat search-space index
 - [x] `src/hooks/use-cracker.ts` — add `resumeAfter` support and pre-seed the shared counter to the next candidate after the supplied password
 - [x] `src/components/cracker/cracker.tsx` — add a Resume-after input in advanced options so users can continue from a previous stopping point
+- [x] `src/types/worker.types.ts` / `src/hooks/use-cracker.ts` / `src/workers/brute-force.worker.ts` — pass the computed start index into the single-worker fallback so resume-after and min-length behave the same in production hosts without `SharedArrayBuffer`
 
 ## Phase 25: Stop Snapshot
 
