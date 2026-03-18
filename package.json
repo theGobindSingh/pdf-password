@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vike dev --host --port 3000",
     "build": "tsc -b && vike build",
-    "lint": "prettier --config .prettierrc \"src/**/*.{ts,js,tsx,jsx}\" --write && eslint \"src/**/*.{ts,js,tsx,jsx}\"",
+    "lint": "prettier --config .prettierrc \"src/**/*.{ts,js,tsx,jsx}\" --check && eslint \"src/**/*.{ts,js,tsx,jsx}\"",
     "lint:fix": "prettier --config .prettierrc \"src/**/*.{ts,js,tsx,jsx}\" --write && eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
     "start": "vike preview --host --port 3000",
     "mkcert": "tsx scripts/mkcert.ts"

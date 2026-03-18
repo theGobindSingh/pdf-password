@@ -185,6 +185,9 @@ Allow users to skip short password combinations when they know the password is a
 - [x] `src/app.tsx` / `src/pages/+Head.tsx` / `src/sw.ts` — replace root-relative URLs with base-aware URLs so the app works under `/<repo>/`
 - [x] `src/types/worker.types.ts` / `src/hooks/use-cracker.ts` / `src/workers/brute-force.worker.ts` — add a single-worker fallback for hosts without `SharedArrayBuffer`, including GitHub Pages
 - [x] `.github/workflows/deploy-pages.yml` / `public/.nojekyll` — add the GitHub Pages deployment workflow and static hosting support files
+- [x] `.github/workflows/deploy-pages.yml` — run `pnpm lint` as a required gate before the Pages deploy job
+- [x] `package.json` — make `pnpm lint` a non-mutating check so CI fails cleanly instead of rewriting files
+- [x] `.github/workflows/deploy-pages.yml` — use Node.js 22 for the lint and deploy jobs
 - [x] `README.md` — document the deployment process and GitHub Pages runtime caveat
 
 ## Phase 23: Odometer Batch Iteration
