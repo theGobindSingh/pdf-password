@@ -187,6 +187,37 @@ Allow users to skip short password combinations when they know the password is a
 - [x] `.github/workflows/deploy-pages.yml` / `public/.nojekyll` — add the GitHub Pages deployment workflow and static hosting support files
 - [x] `README.md` — document the deployment process and GitHub Pages runtime caveat
 
+## Phase 23: Odometer Batch Iteration
+
+- [x] `src/workers/brute-force.worker.ts` — replace per-attempt `nthPassword()` hot-path calls with an odometer iterator that converts the claimed batch start index once and increments candidates in place
+- [x] `README.md` — update the architecture notes to describe batch-start index conversion plus in-batch odometer stepping
+
+## Phase 24: Resume-After Support
+
+- [x] `src/utils/password-index.ts` — add `passwordIndex()` to map a known candidate back to its flat search-space index
+- [x] `src/hooks/use-cracker.ts` — add `resumeAfter` support and pre-seed the shared counter to the next candidate after the supplied password
+- [x] `src/components/cracker/cracker.tsx` — add a Resume-after input in advanced options so users can continue from a previous stopping point
+
+## Phase 25: Stop Snapshot
+
+- [x] `src/hooks/use-cracker.ts` — preserve the last reported candidate and attempt count when the user stops a run manually
+- [x] `src/components/cracker/components/result-display.tsx` / `src/components/cracker/cracker.tsx` — show the stopped state in the UI and toast the last available candidate
+
+## Phase 26: Progress Telemetry + Hero Overflow Fix
+
+- [x] `src/hooks/use-cracker.ts` / `src/components/cracker/components/progress-display.tsx` — add elapsed time and average attempts-per-second to the live cracking UI
+- [x] `src/utils/format-elapsed.ts` / `package.json` — add a `date-fns`-based elapsed duration formatter for live progress display
+- [x] `src/pages/home/hero.tsx` / `src/pages/home/index.tsx` — switch the first fold from rigid viewport centering to a growable min-height layout so taller center content no longer clips off-screen
+
+## Phase 27: Finished-State Telemetry Copy
+
+- [x] `src/hooks/use-cracker.ts` — persist elapsed time and average speed into finished results so completed cards can show them after live progress resets
+- [x] `src/components/cracker/components/result-display.tsx` / `src/components/cracker/cracker.tsx` — show elapsed time and average speed in the stopped and success states, and rename the stopped copy to "Analyzing stopped"
+
+## Phase 28: Advanced Panel Auto-Collapse
+
+- [x] `src/components/cracker/cracker.tsx` — collapse Advanced options automatically after success or manual stop so completed runs return to the default compact state
+
 ## Phase 20: Legacy SPA Cleanup
 
 - [x] `pnpm remove @tanstack/react-router`

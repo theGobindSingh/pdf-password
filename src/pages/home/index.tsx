@@ -23,7 +23,7 @@ export function HomePage() {
   const isStandalone = useStandaloneMode();
 
   return (
-    <main className="relative items-center justify-center bg-background px-4 py-8 h-dvh w-dvw overflow-hidden overflow-y-auto">
+    <main className="relative min-h-dvh w-full overflow-x-hidden overflow-y-auto bg-background px-4 py-8">
       <FloatingBlobs />
 
       <HomeHeroSection />

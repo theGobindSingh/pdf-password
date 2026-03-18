@@ -26,7 +26,7 @@ export function HomeHeroSection() {
   const [pdfState, setPdfState] = useState<PdfState | null>(null);
   const sharedFile = useSharedFile();
   return (
-    <div className="relative flex w-full h-dvh flex-col gap-0 justify-center items-center">
+    <div className="relative flex min-h-dvh w-full flex-col items-center justify-start gap-0 py-10 sm:py-12 lg:justify-center lg:py-16">
       <div className="mb-6 text-center max-w-[min(100%,450px)]">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Unlock your Password-Protected PDF
@@ -38,7 +38,7 @@ export function HomeHeroSection() {
         </p>
       </div>
 
-      <Card className="w-[min(100%,450px)]">
+      <Card className="w-[min(100%,450px)] max-w-full">
         <CardHeader>
           <UploadForm
             file={pdfState?.file ?? null}
@@ -64,7 +64,7 @@ export function HomeHeroSection() {
       </Card>
 
       {/* Features */}
-      <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-2 text-xs text-muted-foreground max-w-[min(100%,450px)]">
+      <ul className="mt-5 grid max-w-[min(100%,450px)] grid-cols-1 gap-x-6 gap-y-2 text-xs text-muted-foreground sm:grid-cols-2">
         {features.map((feature) => (
           <li key={feature} className="flex items-center gap-1.5">
             <span className="text-green-400">✓</span>
@@ -74,7 +74,7 @@ export function HomeHeroSection() {
       </ul>
 
       {/* Disclaimer */}
-      <p className="mt-4 text-center text-xs text-muted-foreground/70">
+      <p className="mt-4 max-w-[min(100%,450px)] text-center text-xs text-muted-foreground/70">
         <InfoCircleIcon
           width={16}
           height={16}

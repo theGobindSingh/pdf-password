@@ -57,15 +57,23 @@ export function Cracker({ pdfData }: CrackerProps) {
   const [maxLength, setMaxLength] = useState(10);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [customCharset, setCustomCharset] = useState('');
+  const [resumeAfter, setResumeAfter] = useState('');
 
   const effectiveCharset = buildCharset(charsetFlags, customCharset);
   const usingCustom = customCharset.trim().length > 0;
+  const trimmedResumeAfter = resumeAfter.trim();
 
   useEffect(() => {
     if (result?.type === 'success') {
       toast.success(`Password found: "${result.password}"`);
     } else if (result?.type === 'failure') {
       toast.error('Could not determine the password.');
+    } else if (result?.type === 'stopped') {
+      toast.info(
+        result.lastTried
+          ? `Analyzing stopped. Last reported candidate: "${result.lastTried}"`
+          : 'Analyzing stopped. No candidate had been reported yet.',
+      );
     }
   }, [result]);
 
@@ -75,6 +83,12 @@ export function Cracker({ pdfData }: CrackerProps) {
       toast.error(error.message);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (result?.type === 'success' || result?.type === 'stopped') {
+      setShowAdvanced(false);
+    }
+  }, [result]);
 
   function toggleFlag(key: keyof CharsetFlags) {
     setCharsetFlags((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -109,6 +123,7 @@ export function Cracker({ pdfData }: CrackerProps) {
                   charset: effectiveCharset,
                   minLength,
                   maxLength,
+                  resumeAfter: trimmedResumeAfter || undefined,
                 })
               }
             >
@@ -250,6 +265,27 @@ export function Cracker({ pdfData }: CrackerProps) {
                   unique characters
                 </p>
               )}
+
+              <div className="pt-1">
+                <p className="text-xs font-medium text-foreground">
+                  Resume after
+                  <span className="ml-1 font-normal text-muted-foreground">
+                    — skips everything up to and including this candidate
+                  </span>
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Example: if the last tested password was eOgR1, the next run
+                  starts after eOgR1.
+                </p>
+              </div>
+              <Input
+                id="resume-after"
+                type="text"
+                placeholder="e.g. eOgR1"
+                value={resumeAfter}
+                onChange={(e) => setResumeAfter(e.target.value)}
+                className="font-mono text-xs"
+              />
             </div>
           )}
         </div>

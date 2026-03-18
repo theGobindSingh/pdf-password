@@ -92,7 +92,7 @@ index charset.length   → "aa"  (first 2-char candidate)
 Two utility functions in `src/utils/password-index.ts` power this:
 
 - **`passwordSpaceSize(charset, maxLength): bigint`** — total number of candidates. Returns `bigint` to avoid precision loss for large search spaces (e.g. 88-char charset at length 10 is ~3.7 × 10¹⁹).
-- **`nthPassword(charset, maxLength, n): string`** — converts a flat integer index to the corresponding candidate via base-N odometer arithmetic. Used inside every worker to turn a claimed batch of indices into actual strings.
+- **`nthPassword(charset, maxLength, n): string`** — converts a flat integer index to the corresponding candidate via base-N odometer arithmetic. Workers now use it conceptually only at batch boundaries: each claimed batch is positioned once, then iterated in-place with an odometer-style incrementer to avoid rebuilding every candidate from scratch.
 
 ### Step 4 — Cryptographic Verification
 
@@ -130,13 +130,18 @@ const startIdx = Atomics.add(counter, 0, BATCH); // atomic fetch-and-add
 if (startIdx >= spaceSize) break; // all work exhausted
 
 const endIdx = min(startIdx + BATCH, spaceSize);
-for (let i = startIdx; i < endIdx; i++) {
-  const candidate = nthPassword(charset, maxLength, Number(i));
+const iterator = createBatchCandidateIterator(
+  charset,
+  maxLength,
+  startIdx,
+  endIdx,
+);
+for (let candidate = iterator.next(); candidate; candidate = iterator.next()) {
   // ... verify ...
 }
 ```
 
-`Atomics.add` is a single CPU instruction on x86/ARM — contention is negligible even with 16 workers on the same counter.
+`Atomics.add` is a single CPU instruction on x86/ARM — contention is negligible even with 16 workers on the same counter. The worker only does the expensive index-to-password conversion once per claimed batch; the rest of the batch advances by mutating the candidate in place.
 
 ---
 
@@ -364,7 +369,7 @@ $$\text{spaceSize}(charset, N) = \sum_{k=1}^{N} |charset|^k$$
 
 `bigint` is used throughout to avoid floating-point precision loss. A 10-character password space over all printable ASCII (~95 chars) is ≈ 6 × 10¹⁹ — well beyond `Number.MAX_SAFE_INTEGER`.
 
-To convert index `n` to a candidate, `nthPassword` subtracts the length-block offsets until it finds which block `n` falls into, then uses repeated modulo to extract each character position:
+To position a worker at batch start index `n`, the search subtracts the length-block offsets until it finds which block `n` falls into, then uses repeated modulo once to extract the initial character positions. After that, the batch advances with an odometer carry step instead of recomputing every later candidate from the raw index:
 
 ```ts
 for (let len = 1; len <= maxLength; len++) {

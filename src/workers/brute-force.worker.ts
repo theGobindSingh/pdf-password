@@ -3,7 +3,6 @@
 
 import type { WorkerInMessage, WorkerOutMessage } from '@/types';
 import {
-  nthPassword,
   parsePdfEncrypt,
   passwordSpaceSize,
   verifyPassword,
@@ -12,6 +11,82 @@ import {
 
 // Phase 15: throttle progress messages to reduce main-thread postMessage saturation
 const PROGRESS_INTERVAL = 1000;
+
+function createBatchCandidateIterator(
+  charset: readonly string[],
+  maxLength: number,
+  startIdx: bigint,
+  endIdx: bigint,
+): { next: () => string | null } {
+  const base = BigInt(charset.length);
+  const remainingInitial = endIdx - startIdx;
+
+  if (remainingInitial <= 0n) {
+    return {
+      next: () => null,
+    };
+  }
+
+  let offset = startIdx;
+  let length = 1;
+  let blockSize = base;
+
+  while (length <= maxLength && offset >= blockSize) {
+    offset -= blockSize;
+    length++;
+    blockSize *= base;
+  }
+
+  if (length > maxLength) {
+    return {
+      next: () => null,
+    };
+  }
+
+  const digits = new Array<number>(length).fill(0);
+  for (let i = length - 1; i >= 0; i--) {
+    digits[i] = Number(offset % base);
+    offset /= base;
+  }
+
+  const chars = digits.map((digit) => charset[digit]!);
+  const firstChar = charset[0]!;
+  let remaining = remainingInitial;
+
+  const advance = () => {
+    for (let position = digits.length - 1; position >= 0; position--) {
+      const nextDigit = digits[position]! + 1;
+      if (nextDigit < charset.length) {
+        digits[position] = nextDigit;
+        chars[position] = charset[nextDigit]!;
+        return;
+      }
+
+      digits[position] = 0;
+      chars[position] = firstChar;
+    }
+
+    digits.push(0);
+    chars.push(firstChar);
+  };
+
+  return {
+    next: () => {
+      if (remaining <= 0n) {
+        return null;
+      }
+
+      const candidate = chars.join('');
+      remaining--;
+
+      if (remaining > 0n) {
+        advance();
+      }
+
+      return candidate;
+    },
+  };
+}
 
 // Catch any unhandled promise rejection that escapes the main try/catch
 // (e.g. from a nested async call) and forward it to the main thread.
@@ -41,6 +116,7 @@ self.onmessage = async (event: MessageEvent<WorkerInMessage>) => {
 
   try {
     const pdfBytes = new Uint8Array(pdfData);
+    const charsetChars = Array.from(charset);
 
     // Parse the PDF /Encrypt dictionary once — all subsequent checks are pure crypto.
     const dict = parsePdfEncrypt(pdfBytes);
@@ -99,8 +175,18 @@ self.onmessage = async (event: MessageEvent<WorkerInMessage>) => {
         break;
       }
 
-      for (let i = batch.startIdx; i < batch.endIdx; i++) {
-        const candidate = nthPassword(charset, maxLength, Number(i));
+      const candidates = createBatchCandidateIterator(
+        charsetChars,
+        maxLength,
+        batch.startIdx,
+        batch.endIdx,
+      );
+
+      while (true) {
+        const candidate = candidates.next();
+        if (candidate === null) {
+          break;
+        }
 
         const match = isAsync
           ? await verifyPasswordAsync(dict, candidate)

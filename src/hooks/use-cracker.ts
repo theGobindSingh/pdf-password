@@ -1,5 +1,5 @@
 import type { WorkerOutMessage } from '@/types';
-import { passwordSpaceSize } from '@/utils';
+import { passwordIndex, passwordSpaceSize } from '@/utils';
 import { useMutation } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -9,17 +9,24 @@ export interface CrackOptions {
   /** Minimum password length to try (default 1 — i.e. no skipping). */
   minLength?: number;
   maxLength?: number;
+  /** Resume strictly after this already-tried password candidate. */
+  resumeAfter?: string;
 }
 
 export interface CrackerProgress {
   attempts: number;
   current: string;
+  elapsedMs: number;
+  speed: number;
 }
 
 export interface CrackerResult {
-  type: 'success' | 'failure';
+  type: 'success' | 'failure' | 'stopped';
   password?: string;
   attempts: number;
+  lastTried?: string;
+  elapsedMs: number;
+  speed: number;
 }
 
 const DEFAULT_CHARSET =
@@ -31,9 +38,12 @@ const BATCH_SIZE = 500;
 
 export function useCracker() {
   const workersRef = useRef<Worker[]>([]);
+  const startedAtRef = useRef<number | null>(null);
   const [progress, setProgress] = useState<CrackerProgress>({
     attempts: 0,
     current: '',
+    elapsedMs: 0,
+    speed: 0,
   });
   const [result, setResult] = useState<CrackerResult | null>(null);
 
@@ -51,6 +61,7 @@ export function useCracker() {
       charset = DEFAULT_CHARSET,
       minLength = 1,
       maxLength = DEFAULT_MAX_LENGTH,
+      resumeAfter,
     }: CrackOptions) => {
       return new Promise<CrackerResult>((resolve, reject) => {
         // Guard: detached or empty buffer means the PDF data was lost.
@@ -73,8 +84,35 @@ export function useCracker() {
           ? Math.min(navigator.hardwareConcurrency ?? 4, charset.length)
           : 1;
 
-        const startOffset =
+        const minLengthOffset =
           minLength <= 1 ? 0n : passwordSpaceSize(charset, minLength - 1);
+        let startOffset = minLengthOffset;
+
+        if (resumeAfter) {
+          const resumeIndex = passwordIndex(charset, resumeAfter);
+          if (resumeIndex === null) {
+            reject(
+              new Error(
+                'Resume value contains characters outside the selected charset.',
+              ),
+            );
+            return;
+          }
+
+          const resumeLength = resumeAfter.length;
+          if (resumeLength > maxLength) {
+            reject(
+              new Error('Resume value is longer than the selected max length.'),
+            );
+            return;
+          }
+
+          startOffset = resumeIndex + 1n;
+          if (startOffset < minLengthOffset) {
+            startOffset = minLengthOffset;
+          }
+        }
+
         const sharedCounter = supportsSharedCounter
           ? new SharedArrayBuffer(8)
           : undefined;
@@ -115,17 +153,37 @@ export function useCracker() {
             if (msg.type === 'progress') {
               workerAttempts[workerId] = msg.attempts;
               const total = workerAttempts.reduce((s, n) => s + n, 0);
-              setProgress({ attempts: total, current: msg.current });
+              const elapsedMs = startedAtRef.current
+                ? Date.now() - startedAtRef.current
+                : 0;
+              setProgress({
+                attempts: total,
+                current: msg.current,
+                elapsedMs,
+                speed: elapsedMs > 0 ? total / (elapsedMs / 1000) : 0,
+              });
             } else if (msg.type === 'success') {
               resolved = true;
               workerAttempts[workerId] = msg.attempts;
               const total = workerAttempts.reduce((s, n) => s + n, 0);
+              const elapsedMs = startedAtRef.current
+                ? Date.now() - startedAtRef.current
+                : 0;
               terminateAll();
+              startedAtRef.current = null;
               const res: CrackerResult = {
                 type: 'success',
                 password: msg.password,
                 attempts: total,
+                elapsedMs,
+                speed: elapsedMs > 0 ? total / (elapsedMs / 1000) : 0,
               };
+              setProgress((prev) => ({
+                ...prev,
+                attempts: total,
+                elapsedMs,
+                speed: elapsedMs > 0 ? total / (elapsedMs / 1000) : 0,
+              }));
               setResult(res);
               resolve(res);
             } else if (msg.type === 'failure') {
@@ -135,7 +193,22 @@ export function useCracker() {
                 resolved = true;
                 terminateAll();
                 const total = workerAttempts.reduce((s, n) => s + n, 0);
-                const res: CrackerResult = { type: 'failure', attempts: total };
+                const elapsedMs = startedAtRef.current
+                  ? Date.now() - startedAtRef.current
+                  : 0;
+                startedAtRef.current = null;
+                setProgress((prev) => ({
+                  ...prev,
+                  attempts: total,
+                  elapsedMs,
+                  speed: elapsedMs > 0 ? total / (elapsedMs / 1000) : 0,
+                }));
+                const res: CrackerResult = {
+                  type: 'failure',
+                  attempts: total,
+                  elapsedMs,
+                  speed: elapsedMs > 0 ? total / (elapsedMs / 1000) : 0,
+                };
                 setResult(res);
                 resolve(res);
               }
@@ -183,18 +256,46 @@ export function useCracker() {
       });
     },
     onMutate: () => {
-      setProgress({ attempts: 0, current: '' });
+      startedAtRef.current = Date.now();
+      setProgress({ attempts: 0, current: '', elapsedMs: 0, speed: 0 });
       setResult(null);
     },
   });
 
+  useEffect(() => {
+    if (!mutation.isPending || startedAtRef.current === null) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      const elapsedMs = Date.now() - startedAtRef.current!;
+      setProgress((prev) => ({
+        ...prev,
+        elapsedMs,
+        speed: elapsedMs > 0 ? prev.attempts / (elapsedMs / 1000) : 0,
+      }));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [mutation.isPending]);
+
   const stopCracking = useCallback(() => {
+    const elapsedMs = progress.elapsedMs;
+    const stoppedResult: CrackerResult = {
+      type: 'stopped',
+      attempts: progress.attempts,
+      lastTried: progress.current || undefined,
+      elapsedMs,
+      speed: elapsedMs > 0 ? progress.attempts / (elapsedMs / 1000) : 0,
+    };
+
     workersRef.current.forEach((w) => w.terminate());
     workersRef.current = [];
     mutation.reset();
-    setProgress({ attempts: 0, current: '' });
-    setResult(null);
-  }, [mutation.reset]);
+    setResult(stoppedResult);
+    startedAtRef.current = null;
+    setProgress({ attempts: 0, current: '', elapsedMs: 0, speed: 0 });
+  }, [mutation, progress.attempts, progress.current, progress.elapsedMs]);
 
   return {
     startCracking: mutation.mutate,

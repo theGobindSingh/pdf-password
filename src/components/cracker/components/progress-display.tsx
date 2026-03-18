@@ -1,5 +1,6 @@
 import { Progress } from '@/components/ui';
 import type { CrackerProgress, CrackerResult } from '@/hooks';
+import { formatAttemptCount, formatElapsedTime } from '@/utils';
 
 interface ProgressDisplayProps {
   progress: CrackerProgress;
@@ -7,20 +8,39 @@ interface ProgressDisplayProps {
 }
 
 export function ProgressDisplay({ progress, result }: ProgressDisplayProps) {
-  const { attempts, current } = progress;
+  const { attempts, current, elapsedMs, speed } = progress;
 
   // Show indeterminate-style progress that cycles when active
   const displayValue = result ? 100 : attempts > 0 ? (attempts % 1000) / 10 : 0;
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex items-center justify-between gap-4 text-sm">
         <span className="font-medium text-foreground">
           Trying a few common password options…
         </span>
         <span className="font-mono text-muted-foreground">
-          {attempts.toLocaleString()} combinations tried
+          {formatAttemptCount(attempts)} combinations tried
         </span>
+      </div>
+
+      <div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+        <div className="rounded-md bg-muted/40 px-3 py-2">
+          <span className="block text-[11px] uppercase tracking-wide text-muted-foreground/80">
+            Time Elapsed
+          </span>
+          <span className="font-mono text-foreground">
+            {formatElapsedTime(elapsedMs)}
+          </span>
+        </div>
+        <div className="rounded-md bg-muted/40 px-3 py-2">
+          <span className="block text-[11px] uppercase tracking-wide text-muted-foreground/80">
+            Speed
+          </span>
+          <span className="font-mono text-foreground">
+            {speed > 0 ? `${formatAttemptCount(speed)}/s` : '0/s'}
+          </span>
+        </div>
       </div>
 
       <Progress value={displayValue} />
