@@ -1,2 +1,2 @@
-export { ProgressDisplay } from './progress-display'
-export { ResultDisplay } from './result-display'
+export { ProgressDisplay } from './progress-display';
+export { ResultDisplay } from './result-display';

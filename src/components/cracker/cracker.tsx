@@ -1,6 +1,7 @@
 import { ErrorMessage } from '@/components/common';
 import { Button, Input } from '@/components/ui';
 import { useCracker } from '@/hooks';
+import { logger } from '@/utils';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ProgressDisplay, ResultDisplay } from './components';
@@ -28,7 +29,7 @@ const CHARSET_OPTIONS: {
   { key: 'symbols', label: '#@!', title: 'Common symbols' },
 ];
 
-function buildCharset(flags: CharsetFlags, custom: string): string {
+const buildCharset = (flags: CharsetFlags, custom: string): string => {
   const trimmed = custom.trim();
   if (trimmed) return [...new Set(trimmed)].join('');
   let result = '';
@@ -37,13 +38,13 @@ function buildCharset(flags: CharsetFlags, custom: string): string {
   if (flags.numbers) result += CHARSET_NUMBERS;
   if (flags.symbols) result += CHARSET_SYMBOLS;
   return result || CHARSET_LOWER;
-}
+};
 
 interface CrackerProps {
   pdfData: ArrayBuffer;
 }
 
-export function Cracker({ pdfData }: CrackerProps) {
+export const Cracker = ({ pdfData }: CrackerProps) => {
   const { startCracking, stopCracking, isCracking, progress, result, error } =
     useCracker();
 
@@ -79,20 +80,24 @@ export function Cracker({ pdfData }: CrackerProps) {
 
   useEffect(() => {
     if (error) {
-      console.error('[Cracker] mutation error:', error);
+      logger.error('[Cracker] mutation error:', error);
       toast.error(error.message);
     }
   }, [error]);
 
   useEffect(() => {
     if (result?.type === 'success' || result?.type === 'stopped') {
-      setShowAdvanced(false);
+      const timer = window.setTimeout(() => {
+        setShowAdvanced(false);
+      }, 0);
+
+      return () => window.clearTimeout(timer);
     }
   }, [result]);
 
-  function toggleFlag(key: keyof CharsetFlags) {
+  const toggleFlag = (key: keyof CharsetFlags) => {
     setCharsetFlags((prev) => ({ ...prev, [key]: !prev[key] }));
-  }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -298,4 +303,4 @@ export function Cracker({ pdfData }: CrackerProps) {
       {result && <ResultDisplay result={result} />}
     </div>
   );
-}
+};

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-function getStandaloneMode(): boolean {
+const getStandaloneMode = (): boolean => {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
     return false;
   }
@@ -9,9 +9,9 @@ function getStandaloneMode(): boolean {
     window.matchMedia('(display-mode: standalone)').matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true
   );
-}
+};
 
-export function useStandaloneMode(): boolean {
+export const useStandaloneMode = (): boolean => {
   const [isStandalone, setIsStandalone] = useState(getStandaloneMode);
 
   useEffect(() => {
@@ -33,4 +33,4 @@ export function useStandaloneMode(): boolean {
   }, []);
 
   return isStandalone;
-}
+};

@@ -2,7 +2,7 @@ import { Button } from '@/components/ui';
 import { usePwaInstall } from '@/hooks';
 import { useState } from 'react';
 
-export function Footer() {
+export const Footer = () => {
   const { canInstall, install, isInstalling, isIos } = usePwaInstall();
   const [showIosHint, setShowIosHint] = useState(false);
   return (
@@ -56,7 +56,7 @@ export function Footer() {
               </svg>{' '}
               Share button in Safari, then choose{' '}
               <strong className="text-muted-foreground">
-                "Add to Home Screen"
+                &quot;Add to Home Screen&quot;
               </strong>
               .
             </p>
@@ -84,4 +84,4 @@ export function Footer() {
       </a>
     </footer>
   );
-}
+};

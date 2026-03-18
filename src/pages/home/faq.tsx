@@ -39,26 +39,24 @@ const faqs = [
   },
 ];
 
-export function HomeFaqSection() {
-  return (
-    <SeoSectionShell
-      id="faq"
-      eyebrow="FAQ"
-      title="Answers before you try to open a locked PDF"
-      description="These are the common questions people ask when they want to open locked PDF documents safely and understand exactly how the tool behaves."
-    >
-      <Accordion className="grid gap-3">
-        {faqs.map((item, index) => (
-          <AccordionItem
-            key={item.question}
-            value={`faq-${index}`}
-            defaultOpen={index === 0}
-          >
-            <AccordionTrigger>{item.question}</AccordionTrigger>
-            <AccordionContent>{item.answer}</AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
-    </SeoSectionShell>
-  );
-}
+export const HomeFaqSection = () => (
+  <SeoSectionShell
+    id="faq"
+    eyebrow="FAQ"
+    title="Answers before you try to open a locked PDF"
+    description="These are the common questions people ask when they want to open locked PDF documents safely and understand exactly how the tool behaves."
+  >
+    <Accordion className="grid gap-3">
+      {faqs.map((item, index) => (
+        <AccordionItem
+          key={item.question}
+          value={`faq-${index}`}
+          defaultOpen={index === 0}
+        >
+          <AccordionTrigger>{item.question}</AccordionTrigger>
+          <AccordionContent>{item.answer}</AccordionContent>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  </SeoSectionShell>
+);

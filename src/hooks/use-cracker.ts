@@ -1,5 +1,5 @@
 import type { WorkerOutMessage } from '@/types';
-import { passwordIndex, passwordSpaceSize } from '@/utils';
+import { logger, passwordIndex, passwordSpaceSize } from '@/utils';
 import { useMutation } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -36,9 +36,15 @@ const DEFAULT_MAX_LENGTH = 10;
 /** How many password indices each worker claims per Atomics.add call. */
 const BATCH_SIZE = 500;
 
-export function useCracker() {
+export const useCracker = () => {
   const workersRef = useRef<Worker[]>([]);
   const startedAtRef = useRef<number | null>(null);
+  const progressRef = useRef<CrackerProgress>({
+    attempts: 0,
+    current: '',
+    elapsedMs: 0,
+    speed: 0,
+  });
   const [progress, setProgress] = useState<CrackerProgress>({
     attempts: 0,
     current: '',
@@ -48,12 +54,17 @@ export function useCracker() {
   const [result, setResult] = useState<CrackerResult | null>(null);
 
   // Terminate any running workers when the component unmounts mid-crack.
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       workersRef.current.forEach((w) => w.terminate());
       workersRef.current = [];
-    };
-  }, []);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
 
   const mutation = useMutation({
     mutationFn: ({
@@ -62,8 +73,8 @@ export function useCracker() {
       minLength = 1,
       maxLength = DEFAULT_MAX_LENGTH,
       resumeAfter,
-    }: CrackOptions) => {
-      return new Promise<CrackerResult>((resolve, reject) => {
+    }: CrackOptions) =>
+      new Promise<CrackerResult>((resolve, reject) => {
         // Guard: detached or empty buffer means the PDF data was lost.
         if (pdfData.byteLength === 0) {
           reject(
@@ -213,7 +224,7 @@ export function useCracker() {
                 resolve(res);
               }
             } else if (msg.type === 'worker-error') {
-              console.error('[use-cracker] worker-error message:', msg);
+              logger.error('[use-cracker] worker-error message:', msg);
               resolved = true;
               terminateAll();
               reject(
@@ -225,7 +236,7 @@ export function useCracker() {
           };
 
           worker.onerror = (err) => {
-            console.error('[use-cracker] worker.onerror:', err);
+            logger.error('[use-cracker] worker.onerror:', err);
             if (!resolved) {
               resolved = true;
               terminateAll();
@@ -253,8 +264,7 @@ export function useCracker() {
             [cloned],
           );
         }
-      });
-    },
+      }),
     onMutate: () => {
       startedAtRef.current = Date.now();
       setProgress({ attempts: 0, current: '', elapsedMs: 0, speed: 0 });
@@ -280,13 +290,14 @@ export function useCracker() {
   }, [mutation.isPending]);
 
   const stopCracking = useCallback(() => {
-    const elapsedMs = progress.elapsedMs;
+    const snapshot = progressRef.current;
+    const { elapsedMs } = snapshot;
     const stoppedResult: CrackerResult = {
       type: 'stopped',
-      attempts: progress.attempts,
-      lastTried: progress.current || undefined,
+      attempts: snapshot.attempts,
+      lastTried: snapshot.current || undefined,
       elapsedMs,
-      speed: elapsedMs > 0 ? progress.attempts / (elapsedMs / 1000) : 0,
+      speed: elapsedMs > 0 ? snapshot.attempts / (elapsedMs / 1000) : 0,
     };
 
     workersRef.current.forEach((w) => w.terminate());
@@ -295,7 +306,7 @@ export function useCracker() {
     setResult(stoppedResult);
     startedAtRef.current = null;
     setProgress({ attempts: 0, current: '', elapsedMs: 0, speed: 0 });
-  }, [mutation, progress.attempts, progress.current, progress.elapsedMs]);
+  }, [mutation]);
 
   return {
     startCracking: mutation.mutate,
@@ -305,4 +316,4 @@ export function useCracker() {
     result,
     error: mutation.error,
   };
-}
+};

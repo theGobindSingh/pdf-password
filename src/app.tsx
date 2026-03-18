@@ -4,20 +4,19 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { withBasePath } from './utils/base-path';
 
-function createQueryClient() {
-  return new QueryClient({
+const createQueryClient = () =>
+  new QueryClient({
     defaultOptions: {
       queries: { retry: false },
       mutations: { retry: false },
     },
   });
-}
 
 interface AppProvidersProps {
   children: ReactNode;
 }
 
-export function AppProviders({ children }: AppProvidersProps) {
+export const AppProviders = ({ children }: AppProvidersProps) => {
   const [queryClient] = useState(createQueryClient);
 
   useEffect(() => {
@@ -41,4 +40,4 @@ export function AppProviders({ children }: AppProvidersProps) {
       />
     </QueryClientProvider>
   );
-}
+};

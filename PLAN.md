@@ -21,6 +21,8 @@ A single-page client-side React app that lets a user upload a PDF, detects if it
 
 - [x] `vite.config.ts` — add Tailwind v4 plugin + `@` path alias
 - [x] `tsconfig.app.json` — add `baseUrl` + `paths` for `@/*`
+- [x] `eslint.config.js` — point typed linting at `tsconfig.app.json` so `pnpm lint` and `pnpm lint:fix` work with project references
+- [x] `.github/copilot-instructions.md` — codify the repo preference for `const` arrow functions over `function` declarations
 - [x] `index.html` — add `class="dark"` to `<html>`
 - [x] `src/styles/index.css` — Tailwind import + CSS custom properties for dark theme
 
@@ -35,6 +37,7 @@ A single-page client-side React app that lets a user upload a PDF, detects if it
 - [x] `src/utils/pdf.ts` — `checkPdfProtection()`
 - [x] `src/utils/brute-force.ts` — `generatePasswords()` generator
 - [x] `src/utils/index.ts`
+- [x] `src/utils/logger.ts` — centralize all console usage in one file and suppress `no-console` there only
 
 ## Phase 5: Web Worker
 

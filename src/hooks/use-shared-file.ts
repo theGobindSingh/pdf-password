@@ -4,8 +4,8 @@ const DB_NAME = 'pdf-unlocker-shared';
 const DB_VERSION = 1;
 const STORE_NAME = 'files';
 
-function openSharedFilesDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+const openSharedFilesDB = (): Promise<IDBDatabase> =>
+  new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = (e) => {
       const db = (e.target as IDBOpenDBRequest).result;
@@ -14,11 +14,11 @@ function openSharedFilesDB(): Promise<IDBDatabase> {
       }
     };
     req.onsuccess = (e) => resolve((e.target as IDBOpenDBRequest).result);
-    req.onerror = () => reject(req.error);
+    req.onerror = () =>
+      reject(req.error ?? new Error('Failed to open IndexedDB.'));
   });
-}
 
-async function consumeSharedFile(): Promise<File | null> {
+const consumeSharedFile = async (): Promise<File | null> => {
   const db = await openSharedFilesDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -33,16 +33,17 @@ async function consumeSharedFile(): Promise<File | null> {
         resolve(null);
       }
     };
-    getReq.onerror = () => reject(getReq.error);
+    getReq.onerror = () =>
+      reject(getReq.error ?? new Error('Failed to read the shared file.'));
   });
-}
+};
 
 /**
  * On mount, checks IndexedDB for a PDF that was shared into the app via the
  * Web Share Target API.  Returns the File once and removes it from the store
  * so subsequent renders don't re-trigger the check.
  */
-export function useSharedFile(): File | null {
+export const useSharedFile = (): File | null => {
   const [sharedFile, setSharedFile] = useState<File | null>(null);
 
   useEffect(() => {
@@ -69,4 +70,4 @@ export function useSharedFile(): File | null {
   }, []);
 
   return sharedFile;
-}
+};

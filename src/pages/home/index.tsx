@@ -7,19 +7,17 @@ import { HomeHeroSection } from '@/pages/home/hero';
 import { HomeHowItWorksSection } from '@/pages/home/how-it-works';
 import { HomeWhyUseThisToolSection } from '@/pages/home/why-use-this-tool';
 
-function FloatingBlobs() {
-  return (
-    <div
-      className="pointer-events-none fixed inset-0 overflow-hidden"
-      aria-hidden="true"
-    >
-      <div className="blob absolute -left-48 -top-48 h-[600px] w-[600px] bg-blue-600/10 blur-3xl" />
-      <div className="blob-delay absolute -bottom-48 -right-48 h-[500px] w-[500px] bg-blue-400/8 blur-3xl" />
-    </div>
-  );
-}
+const FloatingBlobs = () => (
+  <div
+    className="pointer-events-none fixed inset-0 overflow-hidden"
+    aria-hidden="true"
+  >
+    <div className="blob absolute -left-48 -top-48 h-[600px] w-[600px] bg-blue-600/10 blur-3xl" />
+    <div className="blob-delay absolute -bottom-48 -right-48 h-[500px] w-[500px] bg-blue-400/8 blur-3xl" />
+  </div>
+);
 
-export function HomePage() {
+export const HomePage = () => {
   const isStandalone = useStandaloneMode();
 
   return (
@@ -41,4 +39,4 @@ export function HomePage() {
       <Footer />
     </main>
   );
-}
+};

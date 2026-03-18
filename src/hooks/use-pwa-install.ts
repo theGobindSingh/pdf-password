@@ -20,7 +20,7 @@ interface UsePwaInstall {
   isIos: boolean;
 }
 
-function detectIos(): boolean {
+const detectIos = (): boolean => {
   if (typeof navigator === 'undefined') {
     return false;
   }
@@ -31,9 +31,9 @@ function detectIos(): boolean {
       !/(macintosh)/i.test(navigator.userAgent)) ||
     (/macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
   );
-}
+};
 
-function isRunningStandalone(): boolean {
+const isRunningStandalone = (): boolean => {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
     return false;
   }
@@ -42,7 +42,7 @@ function isRunningStandalone(): boolean {
     window.matchMedia('(display-mode: standalone)').matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true
   );
-}
+};
 
 /**
  * Captures the `beforeinstallprompt` event and exposes an `install()` function
@@ -52,7 +52,7 @@ function isRunningStandalone(): boolean {
  * `canInstall` is true when the app is not yet running in standalone mode — so
  * the UI can show "Add to Home Screen" instructions instead.
  */
-export function usePwaInstall(): UsePwaInstall {
+export const usePwaInstall = (): UsePwaInstall => {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalling, setIsInstalling] = useState(false);
   const [isIos] = useState(() => detectIos());
@@ -91,7 +91,7 @@ export function usePwaInstall(): UsePwaInstall {
     };
   }, []);
 
-  async function install() {
+  const install = async () => {
     if (!prompt) return;
     setIsInstalling(true);
     try {
@@ -103,10 +103,10 @@ export function usePwaInstall(): UsePwaInstall {
     } finally {
       setIsInstalling(false);
     }
-  }
+  };
 
   // On iOS: show the button whenever not already running as a standalone app
   const canInstall = isIos ? !isStandalone : prompt !== null;
 
   return { canInstall, install, isInstalling, isIos };
-}
+};

@@ -28,19 +28,17 @@ const reasons = [
   },
 ];
 
-export function HomeWhyUseThisToolSection() {
-  return (
-    <SeoSectionShell
-      id="why-use-this-tool"
-      eyebrow="Why use this tool"
-      title="Built for privacy, clarity, and quick PDF checks"
-      description="This page is designed to help you check PDF protection and recover access in a careful, browser-first way instead of pushing your files through a generic upload service."
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        {reasons.map((reason) => (
-          <SeoFeatureCard key={reason.title} {...reason} />
-        ))}
-      </div>
-    </SeoSectionShell>
-  );
-}
+export const HomeWhyUseThisToolSection = () => (
+  <SeoSectionShell
+    id="why-use-this-tool"
+    eyebrow="Why use this tool"
+    title="Built for privacy, clarity, and quick PDF checks"
+    description="This page is designed to help you check PDF protection and recover access in a careful, browser-first way instead of pushing your files through a generic upload service."
+  >
+    <div className="grid gap-4 sm:grid-cols-2">
+      {reasons.map((reason) => (
+        <SeoFeatureCard key={reason.title} {...reason} />
+      ))}
+    </div>
+  </SeoSectionShell>
+);

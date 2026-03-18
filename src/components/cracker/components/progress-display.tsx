@@ -7,11 +7,16 @@ interface ProgressDisplayProps {
   result: CrackerResult | null;
 }
 
-export function ProgressDisplay({ progress, result }: ProgressDisplayProps) {
+export const ProgressDisplay = ({ progress, result }: ProgressDisplayProps) => {
   const { attempts, current, elapsedMs, speed } = progress;
 
   // Show indeterminate-style progress that cycles when active
-  const displayValue = result ? 100 : attempts > 0 ? (attempts % 1000) / 10 : 0;
+  let displayValue = 0;
+  if (result) {
+    displayValue = 100;
+  } else if (attempts > 0) {
+    displayValue = (attempts % 1000) / 10;
+  }
 
   return (
     <div className="flex flex-col gap-3">
@@ -55,4 +60,4 @@ export function ProgressDisplay({ progress, result }: ProgressDisplayProps) {
       )}
     </div>
   );
-}
+};

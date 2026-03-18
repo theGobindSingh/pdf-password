@@ -7,9 +7,9 @@
  * - If it throws with an encryption/password-related message → protected.
  * - Any other error is re-thrown.
  */
-export async function checkPdfProtection(
+export const checkPdfProtection = async (
   arrayBuffer: ArrayBuffer,
-): Promise<'protected' | 'unprotected'> {
+): Promise<'protected' | 'unprotected'> => {
   const { PDFDocument } = await import('pdf-lib');
 
   try {
@@ -30,4 +30,4 @@ export async function checkPdfProtection(
     }
     throw err;
   }
-}
+};

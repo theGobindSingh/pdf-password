@@ -10,7 +10,10 @@
  * Total number of candidates for a given charset and maxLength.
  * Returns a bigint to avoid precision loss for large search spaces.
  */
-export function passwordSpaceSize(charset: string, maxLength: number): bigint {
+export const passwordSpaceSize = (
+  charset: string,
+  maxLength: number,
+): bigint => {
   let total = 0n;
   let power = 1n;
   const base = BigInt(charset.length);
@@ -19,16 +22,16 @@ export function passwordSpaceSize(charset: string, maxLength: number): bigint {
     total += power;
   }
   return total;
-}
+};
 
 /**
  * Converts a password candidate back into its flat search-space index.
  * Returns null when the candidate contains characters outside the charset.
  */
-export function passwordIndex(
+export const passwordIndex = (
   charset: string,
   password: string,
-): bigint | null {
+): bigint | null => {
   if (password.length === 0) {
     return null;
   }
@@ -36,7 +39,7 @@ export function passwordIndex(
   const base = BigInt(charset.length);
   const indices = new Map<string, bigint>();
   for (let i = 0; i < charset.length; i++) {
-    indices.set(charset[i]!, BigInt(i));
+    indices.set(charset[i], BigInt(i));
   }
 
   let offset = 0n;
@@ -56,7 +59,7 @@ export function passwordIndex(
   }
 
   return offset + value;
-}
+};
 
 /**
  * Converts a flat integer index into the corresponding password candidate.
@@ -64,11 +67,11 @@ export function passwordIndex(
  * Index 0 → first 1-char candidate, … , charset.length-1 → last 1-char candidate,
  * charset.length → first 2-char candidate, and so on.
  */
-export function nthPassword(
+export const nthPassword = (
   charset: string,
   maxLength: number,
   n: number,
-): string {
+): string => {
   const base = charset.length;
   let offset = n;
   for (let len = 1; len <= maxLength; len++) {
@@ -84,4 +87,4 @@ export function nthPassword(
     offset -= count;
   }
   return '';
-}
+};

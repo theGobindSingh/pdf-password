@@ -1,5 +1,6 @@
 export { formatAttemptCount } from './format-count';
 export { formatElapsedTime } from './format-elapsed';
+export { logger } from './logger';
 export {
   nthPassword,
   passwordIndex,

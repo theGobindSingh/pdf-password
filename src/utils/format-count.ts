@@ -5,7 +5,7 @@ const COUNT_UNITS = [
   { value: 1_000, suffix: 'K' },
 ] as const;
 
-export function formatAttemptCount(value: number): string {
+export const formatAttemptCount = (value: number): string => {
   if (value < 1_000) {
     return value.toLocaleString();
   }
@@ -21,4 +21,4 @@ export function formatAttemptCount(value: number): string {
   }
 
   return value.toLocaleString();
-}
+};

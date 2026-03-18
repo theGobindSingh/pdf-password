@@ -1,6 +1,6 @@
 import { formatDuration, intervalToDuration } from 'date-fns';
 
-export function formatElapsedTime(elapsedMs: number): string {
+export const formatElapsedTime = (elapsedMs: number): string => {
   if (elapsedMs <= 0) {
     return '0 seconds';
   }
@@ -13,4 +13,4 @@ export function formatElapsedTime(elapsedMs: number): string {
   });
 
   return formatted || '0 seconds';
-}
+};

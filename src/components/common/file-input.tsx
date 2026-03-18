@@ -7,47 +7,51 @@ interface FileInputProps {
   fileName?: string;
 }
 
-export function FileInput({
+export const FileInput = ({
   onChange,
   accept = '.pdf',
   disabled = false,
   fileName,
-}: FileInputProps) {
+}: FileInputProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  let dragStateClass =
+    'cursor-pointer border-border bg-muted/30 hover:border-primary/60 hover:bg-muted/50';
 
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+  if (disabled) {
+    dragStateClass = 'cursor-not-allowed border-border bg-muted/30 opacity-50';
+  } else if (isDraggingOver) {
+    dragStateClass = 'cursor-copy border-primary bg-primary/10';
+  }
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) onChange(file);
-  }
+  };
 
-  function handleDragOver(e: DragEvent<HTMLDivElement>) {
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (!disabled) setIsDraggingOver(true);
-  }
+  };
 
-  function handleDragLeave() {
+  const handleDragLeave = () => {
     setIsDraggingOver(false);
-  }
+  };
 
-  function handleDrop(e: DragEvent<HTMLDivElement>) {
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDraggingOver(false);
     if (disabled) return;
     const file = e.dataTransfer.files?.[0];
     if (file) onChange(file);
-  }
+  };
 
   return (
     <div
       className={[
         'flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed',
         'p-8 text-center transition-colors',
-        disabled
-          ? 'cursor-not-allowed border-border bg-muted/30 opacity-50'
-          : isDraggingOver
-            ? 'cursor-copy border-primary bg-primary/10'
-            : 'cursor-pointer border-border bg-muted/30 hover:border-primary/60 hover:bg-muted/50',
+        dragStateClass,
       ].join(' ')}
       onClick={() => !disabled && inputRef.current?.click()}
       onKeyDown={(e) => {
@@ -99,10 +103,10 @@ export function FileInput({
             Upload your PDF to get started
           </p>
           <p className="text-xs text-muted-foreground">
-            We'll test every password combination to find yours
+            We&apos;ll test every password combination to find yours
           </p>
         </div>
       )}
     </div>
   );
-}
+};

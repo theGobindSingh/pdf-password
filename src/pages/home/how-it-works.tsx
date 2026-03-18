@@ -28,19 +28,17 @@ const steps = [
   },
 ];
 
-export function HomeHowItWorksSection() {
-  return (
-    <SeoSectionShell
-      id="how-it-works"
-      eyebrow="How it works"
-      title="A clear four-step flow for checking access"
-      description="The process is intentionally simple so users can understand what is happening at every stage and get instant feedback without guessing."
-    >
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {steps.map((step) => (
-          <SeoFeatureCard key={step.title} {...step} />
-        ))}
-      </div>
-    </SeoSectionShell>
-  );
-}
+export const HomeHowItWorksSection = () => (
+  <SeoSectionShell
+    id="how-it-works"
+    eyebrow="How it works"
+    title="A clear four-step flow for checking access"
+    description="The process is intentionally simple so users can understand what is happening at every stage and get instant feedback without guessing."
+  >
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {steps.map((step) => (
+        <SeoFeatureCard key={step.title} {...step} />
+      ))}
+    </div>
+  </SeoSectionShell>
+);

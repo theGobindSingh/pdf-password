@@ -7,21 +7,21 @@ interface ResultDisplayProps {
   result: CrackerResult;
 }
 
-export function ResultDisplay({ result }: ResultDisplayProps) {
+export const ResultDisplay = ({ result }: ResultDisplayProps) => {
   const [copied, setCopied] = useState(false);
   const exactAttempts = result.attempts.toLocaleString();
   const exactSpeed = result.speed.toLocaleString(undefined, {
     maximumFractionDigits: result.speed >= 100 ? 0 : 2,
   });
 
-  function handleCopy() {
+  const handleCopy = () => {
     if (result.password) {
       void navigator.clipboard.writeText(result.password).then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       });
     }
-  }
+  };
 
   if (result.type === 'failure') {
     return (
@@ -144,4 +144,4 @@ export function ResultDisplay({ result }: ResultDisplayProps) {
       </div>
     </div>
   );
-}
+};

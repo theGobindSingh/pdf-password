@@ -1,7 +1,7 @@
 import { checkPdfProtection } from '@/utils';
 import { useMutation } from '@tanstack/react-query';
 
-export function usePdfCheck() {
+export const usePdfCheck = () => {
   const mutation = useMutation({
     mutationFn: async (file: File) => {
       const arrayBuffer = await file.arrayBuffer();
@@ -19,4 +19,4 @@ export function usePdfCheck() {
     error: mutation.error,
     reset: mutation.reset,
   };
-}
+};

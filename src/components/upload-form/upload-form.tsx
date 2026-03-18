@@ -27,12 +27,12 @@ interface UploadFormProps {
   status: PdfStatus;
 }
 
-function formatFileSize(bytes: number): string {
+const formatFileSize = (bytes: number): string => {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+};
 
-function statusBadge(status: PdfStatus) {
+const statusBadge = (status: PdfStatus) => {
   switch (status) {
     case 'protected':
       return <Badge variant="warning">Password Protected</Badge>;
@@ -43,15 +43,15 @@ function statusBadge(status: PdfStatus) {
     default:
       return null;
   }
-}
+};
 
-export function UploadForm({
+export const UploadForm = ({
   file,
   initialFile,
   onPdfReady,
   onRemove,
   status,
-}: UploadFormProps) {
+}: UploadFormProps) => {
   const { checkPdfAsync, isPending, error, reset } = usePdfCheck();
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -103,32 +103,30 @@ export function UploadForm({
       sharedFileProcessed.current = true;
       void handleFileChange(initialFile);
     }
-    // handleFileChange is stable (useCallback) so this is safe
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialFile]);
+  }, [handleFileChange, initialFile]);
 
-  function handleRemove() {
+  const handleRemove = () => {
     reset();
     form.reset();
     onRemove();
-  }
+  };
 
-  function handleCardDragOver(e: DragEvent<HTMLDivElement>) {
+  const handleCardDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (!isPending) setIsDraggingOver(true);
-  }
+  };
 
-  function handleCardDragLeave() {
+  const handleCardDragLeave = () => {
     setIsDraggingOver(false);
-  }
+  };
 
-  function handleCardDrop(e: DragEvent<HTMLDivElement>) {
+  const handleCardDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDraggingOver(false);
     if (isPending) return;
     const dropped = e.dataTransfer.files?.[0];
     if (dropped) void handleFileChange(dropped);
-  }
+  };
 
   const showCard = file !== null && status === 'protected';
 
@@ -138,8 +136,8 @@ export function UploadForm({
         <div>
           <CardTitle>PDF Unlocker</CardTitle>
           <CardDescription className="mt-1">
-            Forgot your PDF password? Select your file and we'll recover it for
-            you.
+            Forgot your PDF password? Select your file and we&apos;ll recover it
+            for you.
           </CardDescription>
         </div>
         {!isPending && statusBadge(status)}
@@ -268,4 +266,4 @@ export function UploadForm({
       {error && <ErrorMessage message={error.message} />}
     </div>
   );
-}
+};

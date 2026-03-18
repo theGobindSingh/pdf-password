@@ -3,6 +3,7 @@
 
 import type { WorkerInMessage, WorkerOutMessage } from '@/types';
 import {
+  logger,
   parsePdfEncrypt,
   passwordSpaceSize,
   verifyPassword,
@@ -12,12 +13,12 @@ import {
 // Phase 15: throttle progress messages to reduce main-thread postMessage saturation
 const PROGRESS_INTERVAL = 1000;
 
-function createBatchCandidateIterator(
+const createBatchCandidateIterator = (
   charset: readonly string[],
   maxLength: number,
   startIdx: bigint,
   endIdx: bigint,
-): { next: () => string | null } {
+): { next: () => string | null } => {
   const base = BigInt(charset.length);
   const remainingInitial = endIdx - startIdx;
 
@@ -49,13 +50,13 @@ function createBatchCandidateIterator(
     offset /= base;
   }
 
-  const chars = digits.map((digit) => charset[digit]!);
-  const firstChar = charset[0]!;
+  const chars = digits.map((digit) => charset[digit]);
+  const firstChar = charset[0];
   let remaining = remainingInitial;
 
   const advance = () => {
     for (let position = digits.length - 1; position >= 0; position--) {
-      const nextDigit = digits[position]! + 1;
+      const nextDigit = digits[position] + 1;
       if (nextDigit < charset.length) {
         digits[position] = nextDigit;
         chars[position] = charset[nextDigit]!;
@@ -86,13 +87,13 @@ function createBatchCandidateIterator(
       return candidate;
     },
   };
-}
+};
 
 // Catch any unhandled promise rejection that escapes the main try/catch
 // (e.g. from a nested async call) and forward it to the main thread.
 self.addEventListener('unhandledrejection', (event) => {
   event.preventDefault();
-  console.error('[worker] unhandledrejection:', event.reason);
+  logger.error('[worker] unhandledrejection:', event.reason);
   self.postMessage({
     type: 'worker-error',
     message:
@@ -122,7 +123,7 @@ self.onmessage = async (event: MessageEvent<WorkerInMessage>) => {
     const dict = parsePdfEncrypt(pdfBytes);
     if (!dict) {
       // Unsupported encryption format (e.g. xref-stream-only or non-standard handler)
-      console.warn(
+      logger.warn(
         '[worker] parsePdfEncrypt returned null — could not find/parse /Encrypt dict. First 512 bytes (latin-1):',
         new TextDecoder('iso-8859-1').decode(pdfBytes.slice(0, 512)),
       );
@@ -221,7 +222,7 @@ self.onmessage = async (event: MessageEvent<WorkerInMessage>) => {
       } satisfies WorkerOutMessage);
     }
   } catch (err) {
-    console.error('[worker] unexpected error:', err);
+    logger.error('[worker] unexpected error:', err);
     self.postMessage({
       type: 'worker-error',
       message: err instanceof Error ? err.message : String(err),

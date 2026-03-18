@@ -1,6 +1,11 @@
 import {
   type ButtonHTMLAttributes,
+  Children,
+  cloneElement,
   type HTMLAttributes,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
   useId,
   useState,
 } from 'react';
@@ -13,23 +18,50 @@ interface AccordionItemProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 interface AccordionTriggerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 type AccordionContentProps = HTMLAttributes<HTMLDivElement>;
 
-export function Accordion({ className = '', ...props }: AccordionProps) {
-  return <div className={className} {...props} />;
-}
+export const Accordion = ({ className = '', ...props }: AccordionProps) => (
+  <div className={className} {...props} />
+);
 
-export function AccordionItem({
+export const AccordionItem = ({
   className = '',
   defaultOpen = false,
   children,
   ...props
-}: AccordionItemProps) {
+}: AccordionItemProps) => {
   const [open, setOpen] = useState(defaultOpen);
   const contentId = useId();
+  const renderedChildren = Children.map(children, (child, index) => {
+    if (!isValidElement(child)) {
+      return child;
+    }
+
+    if (child.type === AccordionTrigger) {
+      return cloneElement(child as ReactElement<AccordionTriggerProps>, {
+        key: child.key ?? index,
+        'aria-expanded': open,
+        'aria-controls': contentId,
+        onClick: () => setOpen((value) => !value),
+      });
+    }
+
+    if (child.type === AccordionContent) {
+      return cloneElement(
+        child as ReactElement<AccordionContentProps & { hidden?: boolean }>,
+        {
+          key: child.key ?? index,
+          id: contentId,
+          hidden: !open,
+        },
+      );
+    }
+
+    return child;
+  });
 
   return (
     <div
@@ -40,48 +72,17 @@ export function AccordionItem({
       ].join(' ')}
       {...props}
     >
-      {Array.isArray(children)
-        ? children.map((child, index) => {
-            if (typeof child !== 'object' || child === null) {
-              return child;
-            }
-
-            if ('type' in child && child.type === AccordionTrigger) {
-              return (
-                <AccordionTrigger
-                  key={index}
-                  aria-expanded={open}
-                  aria-controls={contentId}
-                  onClick={() => setOpen((value) => !value)}
-                  {...child.props}
-                />
-              );
-            }
-
-            if ('type' in child && child.type === AccordionContent) {
-              return (
-                <AccordionContent
-                  key={index}
-                  id={contentId}
-                  hidden={!open}
-                  {...child.props}
-                />
-              );
-            }
-
-            return child;
-          })
-        : children}
+      {renderedChildren}
     </div>
   );
-}
+};
 
-export function AccordionTrigger({
+export const AccordionTrigger = ({
   className = '',
   children,
   type = 'button',
   ...props
-}: AccordionTriggerProps) {
+}: AccordionTriggerProps) => {
   const expanded = props['aria-expanded'] === true;
 
   return (
@@ -106,24 +107,22 @@ export function AccordionTrigger({
       </span>
     </button>
   );
-}
+};
 
-export function AccordionContent({
+export const AccordionContent = ({
   className = '',
   children,
   hidden,
   ...props
-}: AccordionContentProps & { hidden?: boolean }) {
-  return (
-    <div
-      className={[
-        'px-5 pb-5 text-sm leading-6 text-muted-foreground',
-        hidden ? 'hidden' : 'block',
-        className,
-      ].join(' ')}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
+}: AccordionContentProps & { hidden?: boolean }) => (
+  <div
+    className={[
+      'px-5 pb-5 text-sm leading-6 text-muted-foreground',
+      hidden ? 'hidden' : 'block',
+      className,
+    ].join(' ')}
+    {...props}
+  >
+    {children}
+  </div>
+);

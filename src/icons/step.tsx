@@ -2,6 +2,6 @@ interface StepIconProps {
   label: string;
 }
 
-export function StepIcon({ label }: StepIconProps) {
-  return <span className="text-sm font-semibold">{label}</span>;
-}
+export const StepIcon = ({ label }: StepIconProps) => (
+  <span className="text-sm font-semibold">{label}</span>
+);

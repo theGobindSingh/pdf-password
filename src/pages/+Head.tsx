@@ -71,60 +71,55 @@ const faqJsonLd = JSON.stringify({
   ],
 });
 
-export function Head() {
-  return (
-    <>
-      <meta
-        name="keywords"
-        content="forgot pdf password, check pdf protection, open locked pdf, unlock pdf without password, pdf password recovery, private pdf tool, browser pdf utility"
-      />
-      <meta name="robots" content="index, follow" />
-      <meta name="author" content="PDF Unlocker" />
-      <meta property="og:type" content="website" />
-      <meta property="og:image" content={withBasePath('/og-image.png')} />
-      <meta property="og:locale" content="en_US" />
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta
-        name="twitter:title"
-        content="PDF Unlocker | Forgot PDF Password?"
-      />
-      <meta
-        name="twitter:description"
-        content="Check PDF protection and recover access privately in your browser. No uploads, no signup, and no server-side file processing."
-      />
-      <meta name="twitter:image" content={withBasePath('/og-image.png')} />
-      <meta name="theme-color" content="#0f172a" />
-      <meta name="color-scheme" content="dark light" />
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta
-        name="apple-mobile-web-app-status-bar-style"
-        content="black-translucent"
-      />
-      <meta name="apple-mobile-web-app-title" content="PDF Unlocker" />
-      <link rel="manifest" href={withBasePath('/manifest.webmanifest')} />
-      <link
-        rel="icon"
-        type="image/png"
-        href={withBasePath('/icons/android/launchericon-512x512.png')}
-      />
-      <link rel="apple-touch-icon" href={withBasePath('/icons/ios/180.png')} />
-      <link
-        rel="apple-touch-icon"
-        sizes="152x152"
-        href={withBasePath('/icons/ios/152.png')}
-      />
-      <link
-        rel="apple-touch-icon"
-        sizes="167x167"
-        href={withBasePath('/icons/ios/167.png')}
-      />
-      <link
-        rel="apple-touch-icon"
-        sizes="180x180"
-        href={withBasePath('/icons/ios/180.png')}
-      />
-      <script type="application/ld+json">{webApplicationJsonLd}</script>
-      <script type="application/ld+json">{faqJsonLd}</script>
-    </>
-  );
-}
+export const Head = () => (
+  <>
+    <meta
+      name="keywords"
+      content="forgot pdf password, check pdf protection, open locked pdf, unlock pdf without password, pdf password recovery, private pdf tool, browser pdf utility"
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="PDF Unlocker" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content={withBasePath('/og-image.png')} />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PDF Unlocker | Forgot PDF Password?" />
+    <meta
+      name="twitter:description"
+      content="Check PDF protection and recover access privately in your browser. No uploads, no signup, and no server-side file processing."
+    />
+    <meta name="twitter:image" content={withBasePath('/og-image.png')} />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="PDF Unlocker" />
+    <link rel="manifest" href={withBasePath('/manifest.webmanifest')} />
+    <link
+      rel="icon"
+      type="image/png"
+      href={withBasePath('/icons/android/launchericon-512x512.png')}
+    />
+    <link rel="apple-touch-icon" href={withBasePath('/icons/ios/180.png')} />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href={withBasePath('/icons/ios/152.png')}
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="167x167"
+      href={withBasePath('/icons/ios/167.png')}
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href={withBasePath('/icons/ios/180.png')}
+    />
+    <script type="application/ld+json">{webApplicationJsonLd}</script>
+    <script type="application/ld+json">{faqJsonLd}</script>
+  </>
+);

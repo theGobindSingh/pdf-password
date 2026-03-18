@@ -1,1 +1,1 @@
-export { UploadForm } from './upload-form'
+export { UploadForm } from './upload-form';

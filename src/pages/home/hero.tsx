@@ -22,7 +22,7 @@ const features = [
   '100% private, zero tracking',
 ];
 
-export function HomeHeroSection() {
+export const HomeHeroSection = () => {
   const [pdfState, setPdfState] = useState<PdfState | null>(null);
   const sharedFile = useSharedFile();
   return (
@@ -32,7 +32,7 @@ export function HomeHeroSection() {
           Unlock your Password-Protected PDF
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Forgot the password to your PDF? Select the file and we'll
+          Forgot the password to your PDF? Select the file and we&apos;ll
           systematically test every possible combination to recover it —
           entirely in your browser, your file never leaves your device.
         </p>
@@ -85,4 +85,4 @@ export function HomeHeroSection() {
       </p>
     </div>
   );
-}
+};

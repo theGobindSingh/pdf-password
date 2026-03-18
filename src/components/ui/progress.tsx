@@ -4,7 +4,11 @@ interface ProgressProps extends HTMLAttributes<HTMLDivElement> {
   value: number; // 0-100
 }
 
-export function Progress({ value, className = '', ...props }: ProgressProps) {
+export const Progress = ({
+  value,
+  className = '',
+  ...props
+}: ProgressProps) => {
   const clamped = Math.min(100, Math.max(0, value));
 
   return (
@@ -22,4 +26,4 @@ export function Progress({ value, className = '', ...props }: ProgressProps) {
       />
     </div>
   );
-}
+};

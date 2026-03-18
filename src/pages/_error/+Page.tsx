@@ -9,15 +9,15 @@ import '@/styles/index.css';
 import { withBasePath } from '@/utils/base-path';
 import { usePageContext } from 'vike-react/usePageContext';
 
-type ErrorContent = {
+interface ErrorContent {
   statusCode: number;
   title: string;
   message: string;
-};
+}
 
-function getErrorContent(
+const getErrorContent = (
   pageContext: ReturnType<typeof usePageContext>,
-): ErrorContent {
+): ErrorContent => {
   const { abortReason, abortStatusCode, is404 } = pageContext;
 
   if (typeof abortReason === 'string' && abortReason.trim().length > 0) {
@@ -60,9 +60,9 @@ function getErrorContent(
     message:
       'An unexpected error interrupted the page render. Try again or return to the homepage.',
   };
-}
+};
 
-export default function Page() {
+const Page = () => {
   const pageContext = usePageContext();
   const { statusCode, title, message } = getErrorContent(pageContext);
 
@@ -100,4 +100,6 @@ export default function Page() {
       </div>
     </main>
   );
-}
+};
+
+export default Page;

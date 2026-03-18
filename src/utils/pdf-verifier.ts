@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 /**
  * Minimal PDF Standard Security Handler password verifier.
  * Supports Revision 2 / 3 / 4 (RC4-based) and Revision 5 / 6 (AES-256 via SubtleCrypto).
@@ -34,7 +36,7 @@ const MD5_S = [
   21,
 ];
 
-function md5(data: Uint8Array): Uint8Array {
+const md5 = (data: Uint8Array): Uint8Array => {
   const msgLen = data.length;
   const zCount = (55 - (msgLen % 64) + 64) % 64;
   const buf = new Uint8Array(msgLen + 1 + zCount + 8);
@@ -68,8 +70,8 @@ function md5(data: Uint8Array): Uint8Array {
         f = c ^ (b | ~d);
         g = (7 * j) % 16;
       }
-      const s = MD5_S[j]!;
-      const sum = (a + f + M[g]! + MD5_T[j]!) >>> 0;
+      const s = MD5_S[j];
+      const sum = (a + f + M[g] + MD5_T[j]) >>> 0;
       [a, b, c, d] = [d, (b + ((sum << s) | (sum >>> (32 - s)))) >>> 0, b, c];
     }
     a = (a + aa) >>> 0;
@@ -85,69 +87,69 @@ function md5(data: Uint8Array): Uint8Array {
   r.setUint32(8, c, true);
   r.setUint32(12, d, true);
   return out;
-}
+};
 
 // ─── RC4 stream cipher ───────────────────────────────────────────────────────
-function rc4(key: Uint8Array, data: Uint8Array): Uint8Array {
+const rc4 = (key: Uint8Array, data: Uint8Array): Uint8Array => {
   const K = new Uint8Array(256);
   for (let i = 0; i < 256; i++) K[i] = i;
   let j = 0;
   for (let i = 0; i < 256; i++) {
-    j = (j + K[i]! + key[i % key.length]!) & 0xff;
-    [K[i], K[j]] = [K[j]!, K[i]!];
+    j = (j + K[i] + key[i % key.length]) & 0xff;
+    [K[i], K[j]] = [K[j], K[i]];
   }
   const out = new Uint8Array(data.length);
   let x = 0,
     y = 0;
   for (let k = 0; k < data.length; k++) {
     x = (x + 1) & 0xff;
-    y = (y + K[x]!) & 0xff;
-    [K[x], K[y]] = [K[y]!, K[x]!];
-    out[k] = data[k]! ^ K[(K[x]! + K[y]!) & 0xff]!;
+    y = (y + K[x]) & 0xff;
+    [K[x], K[y]] = [K[y], K[x]];
+    out[k] = data[k] ^ K[(K[x] + K[y]) & 0xff];
   }
   return out;
-}
+};
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-function hexToBytes(hex: string): Uint8Array {
+const hexToBytes = (hex: string): Uint8Array => {
   const h = hex.replace(/\s/g, '');
   const out = new Uint8Array(h.length >>> 1);
   for (let i = 0; i < out.length; i++)
     out[i] = parseInt(h.slice(i * 2, i * 2 + 2), 16);
   return out;
-}
+};
 
 /**
  * Parses a PDF literal string `(...)` starting at `str[offset]`.
  * Handles backslash escapes and nested balanced parentheses.
  * The string must have been decoded with iso-8859-1 so charCodeAt gives the raw byte value.
  */
-function parseLiteralString(
+const parseLiteralString = (
   str: string,
   offset: number,
-): { bytes: Uint8Array; end: number } | null {
+): { bytes: Uint8Array; end: number } | null => {
   if (str[offset] !== '(') return null;
   const bytes: number[] = [];
   let i = offset + 1;
   let depth = 1;
   while (i < str.length && depth > 0) {
-    const ch = str[i]!;
+    const ch = str[i];
     if (ch === '\\') {
       i++;
-      const esc = str[i]!;
+      const esc = str[i];
       if (esc >= '0' && esc <= '7') {
         // Octal escape \ddd
         let oct = esc;
         if (
           str[i + 1] !== undefined &&
-          str[i + 1]! >= '0' &&
-          str[i + 1]! <= '7'
+          str[i + 1] >= '0' &&
+          str[i + 1] <= '7'
         ) {
           oct += str[++i];
           if (
             str[i + 1] !== undefined &&
-            str[i + 1]! >= '0' &&
-            str[i + 1]! <= '7'
+            str[i + 1] >= '0' &&
+            str[i + 1] <= '7'
           )
             oct += str[++i];
         }
@@ -183,16 +185,16 @@ function parseLiteralString(
   }
   if (depth !== 0) return null;
   return { bytes: new Uint8Array(bytes), end: i };
-}
+};
 
 /**
  * Extracts the byte value of a PDF string field (key like `O`, `U`, `ID`).
  * Handles both hex `<hex>` and literal `(...)` string formats.
  */
-function extractByteField(flat: string, key: string): Uint8Array | null {
+const extractByteField = (flat: string, key: string): Uint8Array | null => {
   // Hex format: /KEY <hexdigits>
   const hexM = new RegExp(`\\/${key}\\s*<([0-9a-fA-F\\s]+)>`).exec(flat);
-  if (hexM) return hexToBytes(hexM[1]!);
+  if (hexM) return hexToBytes(hexM[1]);
 
   // Literal string format: /KEY (...)
   const litM = new RegExp(`\\/${key}\\s*(\\()`).exec(flat);
@@ -203,9 +205,9 @@ function extractByteField(flat: string, key: string): Uint8Array | null {
     if (result) return result.bytes;
   }
   return null;
-}
+};
 
-function concat(...parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
+const concat = (...parts: Uint8Array[]): Uint8Array<ArrayBuffer> => {
   const total = parts.reduce((n, p) => n + p.length, 0);
   const out = new Uint8Array(total);
   let off = 0;
@@ -214,13 +216,13 @@ function concat(...parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
     off += p.length;
   }
   return out;
-}
+};
 
-function eq(a: Uint8Array, b: Uint8Array): boolean {
+const eq = (a: Uint8Array, b: Uint8Array): boolean => {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
   return true;
-}
+};
 
 // ─── PDF /Encrypt dict parser ─────────────────────────────────────────────────
 
@@ -235,7 +237,7 @@ export interface EncryptDict {
 }
 
 /** Strips nested << ... >> blocks, keeping only the top-level content. */
-function flattenDict(content: string): string {
+const flattenDict = (content: string): string => {
   let out = '',
     depth = 0,
     i = 0;
@@ -253,10 +255,10 @@ function flattenDict(content: string): string {
   }
   if (depth === 0 && i < content.length) out += content[i];
   return out;
-}
+};
 
 /** Extracts content between the outermost << >> starting at `from`. */
-function extractDictContent(text: string, from: number): string | null {
+const extractDictContent = (text: string, from: number): string | null => {
   const start = text.indexOf('<<', from);
   if (start < 0) return null;
   let depth = 0,
@@ -272,9 +274,9 @@ function extractDictContent(text: string, from: number): string | null {
     } else i++;
   }
   return null;
-}
+};
 
-export function parsePdfEncrypt(pdfBytes: Uint8Array): EncryptDict | null {
+export const parsePdfEncrypt = (pdfBytes: Uint8Array): EncryptDict | null => {
   // iso-8859-1 maps each byte 0x00-0xFF to its Unicode equivalent, so the ASCII
   // structure is preserved and binary segments are safe to regex over.
   const text = new TextDecoder('iso-8859-1').decode(pdfBytes);
@@ -282,22 +284,20 @@ export function parsePdfEncrypt(pdfBytes: Uint8Array): EncryptDict | null {
   // /Encrypt appears in the trailer dict or cross-reference stream dict
   const encRef = /\/Encrypt\s+(\d+)\s+(\d+)\s+R/.exec(text);
   if (!encRef) {
-    console.warn('[parsePdfEncrypt] no /Encrypt indirect reference found');
+    logger.warn('[parsePdfEncrypt] no /Encrypt indirect reference found');
     return null;
   }
   const [, num, gen] = encRef;
 
   const objM = new RegExp(`\\b${num}\\s+${gen}\\s+obj`).exec(text);
   if (!objM) {
-    console.warn(
-      `[parsePdfEncrypt] object ${num} ${gen} obj not found in file`,
-    );
+    logger.warn(`[parsePdfEncrypt] object ${num} ${gen} obj not found in file`);
     return null;
   }
 
   const rawContent = extractDictContent(text, objM.index + objM[0].length);
   if (!rawContent) {
-    console.warn(
+    logger.warn(
       '[parsePdfEncrypt] could not extract dict content from encrypt object',
     );
     return null;
@@ -305,18 +305,19 @@ export function parsePdfEncrypt(pdfBytes: Uint8Array): EncryptDict | null {
 
   // Flatten so nested /CF sub-dicts don't interfere with field matching
   const flat = flattenDict(rawContent);
-  console.debug('[parsePdfEncrypt] flat encrypt dict:', flat.slice(0, 300));
+  logger.debug('[parsePdfEncrypt] flat encrypt dict:', flat.slice(0, 300));
 
   const r = Number((/\/R\s+(\d+)/.exec(flat) ?? [])[1]);
   if (!r) {
-    console.warn(
+    logger.warn(
       '[parsePdfEncrypt] /R not found or zero in encrypt dict. flat:',
       flat.slice(0, 300),
     );
     return null;
   }
 
-  const p = parseInt((/\/P\s+(-?\d+)/.exec(flat) ?? [, '0'])[1]!, 10);
+  const pMatch = /\/P\s+(-?\d+)/.exec(flat);
+  const p = parseInt(pMatch?.[1] ?? '0', 10);
   const keyLenBits =
     Number((/\/KeyLength\s+(\d+)/.exec(flat) ?? [])[1]) || (r === 2 ? 40 : 128);
   const keyLen = r === 2 ? 5 : keyLenBits / 8;
@@ -326,10 +327,10 @@ export function parsePdfEncrypt(pdfBytes: Uint8Array): EncryptDict | null {
   const o = extractByteField(flat, 'O');
   const u = extractByteField(flat, 'U');
   if (!o || !u) {
-    console.warn(
+    logger.warn(
       '[parsePdfEncrypt] /O or /U strings not found (tried hex and literal formats)',
     );
-    console.warn('[parsePdfEncrypt] flat dict snippet:', flat.slice(0, 500));
+    logger.warn('[parsePdfEncrypt] flat dict snippet:', flat.slice(0, 500));
     return null;
   }
 
@@ -340,7 +341,7 @@ export function parsePdfEncrypt(pdfBytes: Uint8Array): EncryptDict | null {
   let id0: Uint8Array | null = null;
   const idHexM = /\/ID\s*\[<([0-9a-fA-F\s]*)>/.exec(text);
   if (idHexM) {
-    id0 = hexToBytes(idHexM[1]!);
+    id0 = hexToBytes(idHexM[1]);
   } else {
     const idLitM = /\/ID\s*\[\s*(\()/.exec(text);
     if (idLitM) {
@@ -350,7 +351,7 @@ export function parsePdfEncrypt(pdfBytes: Uint8Array): EncryptDict | null {
     }
   }
   if (!id0) {
-    console.warn('[parsePdfEncrypt] /ID array not found in trailer');
+    logger.warn('[parsePdfEncrypt] /ID array not found in trailer');
     return null;
   }
 
@@ -364,10 +365,10 @@ export function parsePdfEncrypt(pdfBytes: Uint8Array): EncryptDict | null {
     id0,
     encryptMeta,
   };
-}
+};
 
 // ─── Encryption key derivation (Algorithm 2, ISO 32000-1 §7.6.3.3) ──────────
-function computeKey(password: string, dict: EncryptDict): Uint8Array {
+const computeKey = (password: string, dict: EncryptDict): Uint8Array => {
   const pwBytes = new TextEncoder().encode(password);
   const padded = new Uint8Array(32);
   const take = Math.min(pwBytes.length, 32);
@@ -386,10 +387,13 @@ function computeKey(password: string, dict: EncryptDict): Uint8Array {
     for (let i = 0; i < 50; i++) hash = md5(hash.slice(0, dict.keyLen));
   }
   return hash.slice(0, dict.keyLen);
-}
+};
 
 // ─── Synchronous verifier (R2 / R3 / R4) ─────────────────────────────────────
-export function verifyPassword(dict: EncryptDict, password: string): boolean {
+export const verifyPassword = (
+  dict: EncryptDict,
+  password: string,
+): boolean => {
   const key = computeKey(password, dict);
   if (dict.r === 2) {
     // Algorithm 4: RC4(key, padding) must equal U
@@ -405,27 +409,27 @@ export function verifyPassword(dict: EncryptDict, password: string): boolean {
     );
   }
   return eq(result, dict.u.slice(0, 16));
-}
+};
 
 // ─── Async verifier (R5 / R6, AES-256 via SubtleCrypto) ──────────────────────
-export async function verifyPasswordAsync(
+export const verifyPasswordAsync = async (
   dict: EncryptDict,
   password: string,
-): Promise<boolean> {
+): Promise<boolean> => {
   // User validation: SHA-256(password[0..32] + U_validation_salt) == U_hash
   const pwBytes = new TextEncoder().encode(password).slice(0, 32);
   const salt = dict.u.slice(32, 40);
   const hashBuf = await crypto.subtle.digest('SHA-256', concat(pwBytes, salt));
   return eq(new Uint8Array(hashBuf), dict.u.slice(0, 32));
-}
+};
 
 // ─── Convenience wrapper ──────────────────────────────────────────────────────
-export async function verifyPdfPassword(
+export const verifyPdfPassword = async (
   pdfBytes: Uint8Array,
   password: string,
-): Promise<boolean | null> {
+): Promise<boolean | null> => {
   const dict = parsePdfEncrypt(pdfBytes);
   if (!dict) return null;
   if (dict.r >= 5) return verifyPasswordAsync(dict, password);
   return verifyPassword(dict, password);
-}
+};

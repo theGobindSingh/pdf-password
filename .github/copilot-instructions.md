@@ -91,6 +91,7 @@ src/
 - **Folders and files**: Use lower case kebab-case (e.g., `upload-form.tsx`, `use-pdf-check.ts`)
 - **Components**: Use PascalCase for component names in the file, but the filename is lower kebab-case
 - **Index files**: Each folder should have an `index.ts` (or `index.tsx` for components) that exports the public API of that folder
+- **Functions**: Prefer `const` arrow functions over `function` declarations for components, hooks, utilities, and local handlers
 
 ## Reusability & Modularity Principles
 

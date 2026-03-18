@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import { withBasePath } from '@/utils/base-path';
+import { logger } from '@/utils/logger';
 import { clientsClaim } from 'workbox-core';
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
@@ -11,7 +12,7 @@ const shareTargetPath = withBasePath('/share-target');
 const sharedRedirectPath = `${withBasePath('/')}?shared=1`;
 
 // Take control of all clients immediately on activation
-self.skipWaiting();
+void self.skipWaiting();
 clientsClaim();
 
 // Precache all Vite-generated assets (manifest injected by vite-plugin-pwa)
@@ -42,7 +43,7 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-async function handleShareTarget(request: Request): Promise<Response> {
+const handleShareTarget = async (request: Request): Promise<Response> => {
   try {
     const formData = await request.formData();
     const file = formData.get('file');
@@ -50,21 +51,21 @@ async function handleShareTarget(request: Request): Promise<Response> {
       await storeSharedFile(file);
     }
   } catch (err) {
-    console.error('[SW] Failed to handle share target:', err);
+    logger.error('[SW] Failed to handle share target:', err);
   }
   return new Response(null, {
     status: 303,
     headers: { Location: sharedRedirectPath },
   });
-}
+};
 
 // ── IndexedDB helpers ─────────────────────────────────────────────────────────
 const DB_NAME = 'pdf-unlocker-shared';
 const DB_VERSION = 1;
 const STORE_NAME = 'files';
 
-function openSharedFilesDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+const openSharedFilesDB = (): Promise<IDBDatabase> =>
+  new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = (e) => {
       const db = (e.target as IDBOpenDBRequest).result;
@@ -73,11 +74,11 @@ function openSharedFilesDB(): Promise<IDBDatabase> {
       }
     };
     req.onsuccess = (e) => resolve((e.target as IDBOpenDBRequest).result);
-    req.onerror = () => reject(req.error);
+    req.onerror = () =>
+      reject(req.error ?? new Error('Failed to open IndexedDB.'));
   });
-}
 
-async function storeSharedFile(file: File): Promise<void> {
+const storeSharedFile = async (file: File): Promise<void> => {
   const db = await openSharedFilesDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -92,7 +93,7 @@ async function storeSharedFile(file: File): Promise<void> {
     };
     tx.onerror = () => {
       db.close();
-      reject(tx.error);
+      reject(tx.error ?? new Error('Failed to store the shared file.'));
     };
   });
-}
+};
