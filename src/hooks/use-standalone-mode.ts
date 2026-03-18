@@ -12,7 +12,9 @@ const getStandaloneMode = (): boolean => {
 };
 
 export const useStandaloneMode = (): boolean => {
-  const [isStandalone, setIsStandalone] = useState(getStandaloneMode);
+  // Keep the initial render aligned with prerendered HTML; standalone mode is
+  // resolved after mount to avoid hydration mismatches in installed PWAs.
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') {

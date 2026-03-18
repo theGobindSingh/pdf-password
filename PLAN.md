@@ -225,6 +225,10 @@ Allow users to skip short password combinations when they know the password is a
 
 - [x] `src/components/cracker/cracker.tsx` — collapse Advanced options automatically after success or manual stop so completed runs return to the default compact state
 
+## Phase 29: Installed PWA Hydration Fix
+
+- [x] `src/hooks/use-standalone-mode.ts` — defer standalone-mode detection until after mount so the installed PWA hydrates the same markup as the prerendered page
+
 ## Phase 20: Legacy SPA Cleanup
 
 - [x] `pnpm remove @tanstack/react-router`
